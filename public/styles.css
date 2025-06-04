@@ -102,18 +102,20 @@ header p {
 .path-item {
     background: #f8f9fa;
     border-left: 4px solid #00B5E2;
-    padding: 15px;
+    padding: 12px;
     border-radius: 0 8px 8px 0;
+    font-size: 0.9rem;
 }
 
 .path-item h4 {
     color: #000000;
     margin-bottom: 8px;
+    font-size: 1rem;
 }
 
 .path-item p {
     font-family: 'Courier New', monospace;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: #6F6F6B;
 }
 
@@ -333,7 +335,7 @@ header p {
 .legend-topology {
     display: flex;
     gap: 20px;
-    align-items: flex-start;
+    align-items: stretch;
 }
 
 .legend-topology .device-legend {
