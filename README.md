@@ -1,4 +1,4 @@
-# Signal-Routing System Troubleshooter
+# Signal-Routing Troubleshooting Exercise
 
 An interactive web application for diagnosing faults in signal-routing systems. Based on network topology analysis and behavioral testing, users identify which device is misconfigured or faulty.
 

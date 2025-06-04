@@ -264,6 +264,17 @@ header p {
     transform: none;
 }
 
+/* Hint button styling for better visibility */
+.hint-btn {
+    background: #954B97;
+    color: #FFFFFF;
+    margin-left: 10px;
+}
+
+.hint-btn:hover {
+    background: #00B5E2;
+}
+
 .feedback {
     margin-top: 20px;
     padding: 15px;

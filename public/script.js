@@ -145,10 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add hint button
     const hintBtn = document.createElement('button');
     hintBtn.textContent = '💡 Need a hint?';
-    hintBtn.className = 'submit-btn';
-    hintBtn.style.marginLeft = '10px';
-    hintBtn.style.background = 'rgba(255,255,255,0.2)';
-    hintBtn.style.color = 'white';
+    hintBtn.className = 'hint-btn submit-btn';
     
     hintBtn.addEventListener('click', function() {
         if (hintIndex < hints.length) {
