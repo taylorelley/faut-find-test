@@ -1,0 +1,13 @@
+services:
+  signal-routing-app:
+    build: .
+    ports:
+      - "7777:3000"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    container_name: signal-routing-troubleshooter
+
+networks:
+  default:
+    name: signal-routing-network
