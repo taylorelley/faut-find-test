@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signal-Routing System Troubleshooter</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔧 Signal-Routing System Troubleshooter</h1>
+            <p>Identify the faulty device based on observed behaviors and test results</p>
+        </header>
+
+        <div class="content">
+            <!-- Device Legend Section -->
+            <section class="card">
+                <h2>📋 Device Legend</h2>
+                <div class="device-grid">
+                    <div class="device-item">
+                        <strong>AS - AlphaStation</strong>
+                        <p>Labels each incoming signal as dynamic or static, then forwards to BetaHub</p>
+                    </div>
+                    <div class="device-item">
+                        <strong>BH - BetaHub</strong>
+                        <p>Aggregator: collects signals from AlphaStation, tags them "ready," sends upstream to GammaCore</p>
+                    </div>
+                    <div class="device-item">
+                        <strong>GC - GammaCore</strong>
+                        <p>Central nexus: inspects each incoming signal and sends all traffic to ZetaSplit first</p>
+                    </div>
+                    <div class="device-item">
+                        <strong>ZS - ZetaSplit</strong>
+                        <p>Splits dynamic signal into two identical streams for parallel processing. Static signals pass through unchanged</p>
+                    </div>
+                    <div class="device-item">
+                        <strong>DG - DeltaGate</strong>
+                        <p>Filter: allows only "priority-dynamic" signals through; drops non-priority dynamic. All static signals are dropped</p>
+                    </div>
+                    <div class="device-item">
+                        <strong>EB - EtaBalancer</strong>
+                        <p>Balancer: takes signals from DeltaGate and distributes them (round-robin) to IotaCompute nodes</p>
+                    </div>
+                    <div class="device-item">
+                        <strong>IC₁/IC₂ - IotaCompute</strong>
+                        <p>Compute nodes: process dynamic streams, forward "processed-dynamic" output to EpsilonMerge. Static never reaches IC</p>
+                    </div>
+                    <div class="device-item">
+                        <strong>EM - EpsilonMerge</strong>
+                        <p>Merger: combines two "processed-dynamic" streams into one consolidated stream and sends to KappaStore</p>
+                    </div>
+                    <div class="device-item">
+                        <strong>KS - KappaStore</strong>
+                        <p>Storage node: holds both static assets (pure archive data) and merged dynamic results (from EM)</p>
+                    </div>
+                    <div class="device-item">
+                        <strong>TF1 - ThetaFire-A</strong>
+                        <p>Stage-1 security gateway for static traffic only. Static signals are sent here; forwards to TF2. Dynamic signals do not go to TF1</p>
+                    </div>
+                    <div class="device-item">
+                        <strong>TF2 - ThetaFire-B</strong>
+                        <p>Stage-2 security gateway for static traffic only. Performs deeper policy checks before forwarding static to KappaStore</p>
+                    </div>
+                    <div class="device-item">
+                        <strong>LR - LambdaRouter</strong>
+                        <p>Egress node: requests tagged "external" are sent here (irrelevant to storage)</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Topology Diagram Section -->
+            <section class="card">
+                <h2>🗺️ System Topology</h2>
+                <div class="topology-container">
+                    <pre class="mermaid">
+flowchart TB
+    AS["🖥️ AlphaStation (AS)"]
+    BH["🔀 BetaHub (BH)"]
+    GC["🔹 GammaCore (GC)"]
+    ZS["↗️ ZetaSplit (ZS)"]
+    DG["⚠️ DeltaGate (DG)"]
+    EB["⚖️ EtaBalancer (EB)"]
+    IC1["⚙️ IotaCompute 1 (IC₁)"]
+    IC2["⚙️ IotaCompute 2 (IC₂)"]
+    EM["🔗 EpsilonMerge (EM)"]
+    KS["💾 KappaStore (KS)"]
+    TF1["🛡️ ThetaFire-A (TF1)"]
+    TF2["🛡️ ThetaFire-B (TF2)"]
+    LR["🌐 LambdaRouter (LR)"]
+
+    %% Common Upstream:
+    AS --- BH
+    BH --- GC
+    GC --- ZS
+
+    %% Dynamic Path:
+    ZS --- DG
+    DG --- EB
+    EB --- IC1
+    EB --- IC2
+    IC1 --- EM
+    IC2 --- EM
+    EM --- KS
+
+    %% Static Path:
+    ZS --- TF1
+    TF1 --- TF2
+    TF2 --- KS
+
+    %% External Egress:
+    GC --- LR
+
+    classDef commonPath fill:#f9f,stroke:#333,stroke-width:2px
+    classDef dynamicPath fill:#e1f5fe
+    classDef staticPath fill:#fff3e0
+    classDef storage fill:#e8f5e8
+    classDef security fill:#fce4ec
+
+    class AS,BH,GC,ZS commonPath
+    class DG,EB,IC1,IC2,EM dynamicPath
+    class TF1,TF2 security
+    class KS storage
+                    </pre>
+                </div>
+                
+                <div class="path-info">
+                    <div class="path-item">
+                        <h4>🟣 Common Upstream Path</h4>
+                        <p>AS → BH → GC → ZS (all traffic flows through here first)</p>
+                    </div>
+                    <div class="path-item">
+                        <h4>🔵 Dynamic Path (Processing Cluster)</h4>
+                        <p>ZS → DG → EB → IC₁ & IC₂ → EM → KS</p>
+                        <small>ZetaSplit duplicates dynamic signals; only priority-dynamic survives DeltaGate</small>
+                    </div>
+                    <div class="path-item">
+                        <h4>🟠 Static Path (Archive)</h4>
+                        <p>ZS → TF1 → TF2 → KS</p>
+                        <small>ZetaSplit passes static signals unchanged to security gateways</small>
+                    </div>
+                    <div class="path-item">
+                        <h4>🌐 External Egress</h4>
+                        <p>GC → LR (irrelevant to storage)</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Test Results Section -->
+            <section class="card">
+                <h2>🧪 Observed Test Results</h2>
+                
+                <div class="test-category">
+                    <h3>✅ Dynamic Requests (Working)</h3>
+                    <div class="test-result success">
+                        <p><strong>From AlphaStation (AS):</strong></p>
+                        <p>Every request labeled "dynamic" (priority or non-priority) that should run through the dynamic pipeline (ZS→DG→EB→IC₁/IC₂→EM→KS) <span class="status-badge success">SUCCESS</span></p>
+                        <p class="note">This confirms that priority-dynamic splitting, load-balancing, computing, merging, and final storage into KS all work correctly.</p>
+                    </div>
+                </div>
+
+                <div class="test-category">
+                    <h3>❌ Static Requests (Failing)</h3>
+                    <div class="test-result failure">
+                        <p><strong>From GammaCore (GC) or upstream:</strong></p>
+                        <p>Every request labeled "static" that should follow (ZS→TF1→TF2→KS) <span class="status-badge failure">TIMEOUT/REJECTED</span></p>
+                        <p class="note">Important: No explicit "destination unreachable" message—requests simply never complete.</p>
+                    </div>
+                </div>
+
+                <div class="test-category">
+                    <h3>🏓 Ping/Reachability Tests (All Working)</h3>
+                    <div class="ping-results">
+                        <div class="ping-item">GC → ZS <span class="status-badge success">✅</span></div>
+                        <div class="ping-item">ZS → DG <span class="status-badge success">✅</span></div>
+                        <div class="ping-item">DG → EB <span class="status-badge success">✅</span></div>
+                        <div class="ping-item">EB → IC₁ <span class="status-badge success">✅</span></div>
+                        <div class="ping-item">EB → IC₂ <span class="status-badge success">✅</span></div>
+                        <div class="ping-item">IC₁ → EM <span class="status-badge success">✅</span></div>
+                        <div class="ping-item">IC₂ → EM <span class="status-badge success">✅</span></div>
+                        <div class="ping-item">EM → KS <span class="status-badge success">✅</span></div>
+                        <div class="ping-item">ZS → TF1 <span class="status-badge success">✅</span></div>
+                        <div class="ping-item">TF1 → TF2 <span class="status-badge success">✅</span></div>
+                        <div class="ping-item">TF2 → KS <span class="status-badge success">✅</span></div>
+                        <div class="ping-item">GC → LR <span class="status-badge success">✅</span></div>
+                    </div>
+                    <p class="note">All links and devices respond to ping—no broken cables or physical connectivity issues.</p>
+                </div>
+            </section>
+
+            <!-- Diagnostic Section -->
+            <section class="card diagnostic-section">
+                <h2>🔍 Your Diagnosis</h2>
+                <div class="diagnostic-form">
+                    <div class="form-group">
+                        <label for="deviceSelect">Which device is faulty?</label>
+                        <select id="deviceSelect" required>
+                            <option value="">Select a device...</option>
+                            <option value="AS">AS - AlphaStation</option>
+                            <option value="BH">BH - BetaHub</option>
+                            <option value="GC">GC - GammaCore</option>
+                            <option value="ZS">ZS - ZetaSplit</option>
+                            <option value="DG">DG - DeltaGate</option>
+                            <option value="EB">EB - EtaBalancer</option>
+                            <option value="IC1">IC₁ - IotaCompute 1</option>
+                            <option value="IC2">IC₂ - IotaCompute 2</option>
+                            <option value="EM">EM - EpsilonMerge</option>
+                            <option value="KS">KS - KappaStore</option>
+                            <option value="TF1">TF1 - ThetaFire-A</option>
+                            <option value="TF2">TF2 - ThetaFire-B</option>
+                            <option value="LR">LR - LambdaRouter</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="reasoning">Explain your reasoning (2-3 sentences):</label>
+                        <textarea id="reasoning" rows="4" placeholder="How did you rule out other devices? Why is this device the culprit?"></textarea>
+                    </div>
+                    
+                    <button id="submitBtn" class="submit-btn">Submit Diagnosis</button>
+                </div>
+
+                <div id="feedback" class="feedback hidden"></div>
+            </section>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+    </script>
+</body>
+</html>
