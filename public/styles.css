@@ -73,7 +73,7 @@ header p {
 }
 
 .device-item strong {
-    color: #954B97;
+    color: #000000;
     display: block;
     margin-bottom: 8px;
     font-size: 1.1rem;
@@ -191,7 +191,6 @@ header p {
 }
 
 .diagnostic-section {
-    background: linear-gradient(135deg, #F18626 0%, #FFD600 100%);
     color: #000000;
 }
 
