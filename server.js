@@ -35,5 +35,5 @@ app.post('/api/validate', (req, res) => {
 });
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Signal Routing Troubleshooter running on port ${PORT}`);
+  console.log(`Signal-Routing Troubleshooting Exercise running on port ${PORT}`);
 });
