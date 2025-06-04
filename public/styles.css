@@ -318,11 +318,26 @@ header p {
     .ping-results {
         grid-template-columns: 1fr;
     }
+
+    .legend-topology {
+        flex-direction: column;
+    }
 }
 
 /* Mermaid diagram styling */
 .mermaid {
     text-align: center;
+}
+
+/* Device Legend and Topology side-by-side layout */
+.legend-topology {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.legend-topology .card {
+    flex: 1;
 }
 
 /* Custom scrollbar for better UX */
