@@ -62,7 +62,7 @@ async function init() {
     }
 
 function populateScenario(data) {
-    document.getElementById('pageTitle').textContent = `🔧 ${data.title}`;
+    document.getElementById('pageTitle').textContent = data.title;
 
     const overviewSection = document.getElementById('overviewSection');
     overviewSection.innerHTML = '<h2>Exercise Overview</h2>' +
