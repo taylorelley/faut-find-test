@@ -13,6 +13,7 @@ async function init() {
     const scenarioControls = document.getElementById('scenarioControls');
     const uploadBtn = document.getElementById('scenarioUploadBtn');
     const fileInput = document.getElementById('scenarioFile');
+    const uploadStatus = document.getElementById('scenarioUploadStatus');
 
     scenarioToggle.addEventListener('click', () => {
         scenarioControls.classList.toggle('hidden');
@@ -171,28 +172,35 @@ async function loadScenario(name) {
         formData.append('file', fileInput.files[0]);
         uploadBtn.textContent = 'Uploading...';
         uploadBtn.disabled = true;
+        uploadStatus.classList.add('hidden');
         try {
             const uploadRes = await fetch('/api/scenario/upload', {
                 method: 'POST',
                 body: formData
             });
             const uploadData = await uploadRes.json();
-            scenarioSelect.innerHTML = '';
-            const listRes = await fetch('/api/scenarios');
-            const listData = await listRes.json();
-            listData.scenarios.forEach(name => {
-                const opt = document.createElement('option');
-                opt.value = name;
-                opt.textContent = name;
-                scenarioSelect.appendChild(opt);
-            });
-            currentScenario = uploadData.name;
-            scenarioSelect.value = currentScenario;
-            await loadScenario(currentScenario);
-            checkFormValidity();
-            fileInput.value = '';
+            if (uploadRes.ok && uploadData.success) {
+                scenarioSelect.innerHTML = '';
+                const listRes = await fetch('/api/scenarios');
+                const listData = await listRes.json();
+                listData.scenarios.forEach(name => {
+                    const opt = document.createElement('option');
+                    opt.value = name;
+                    opt.textContent = name;
+                    scenarioSelect.appendChild(opt);
+                });
+                currentScenario = uploadData.name;
+                scenarioSelect.value = currentScenario;
+                await loadScenario(currentScenario);
+                checkFormValidity();
+                fileInput.value = '';
+                showFeedback(`Scenario "${uploadData.name}" uploaded!`, 'success', uploadStatus);
+            } else {
+                showFeedback(uploadData.error || 'Upload failed', 'error', uploadStatus);
+            }
         } catch (err) {
             console.error('Upload failed', err);
+            showFeedback('Upload failed', 'error', uploadStatus);
         } finally {
             uploadBtn.textContent = 'Upload';
             uploadBtn.disabled = false;
