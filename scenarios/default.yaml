@@ -1,0 +1,143 @@
+title: "Production‐Line QualityCheck Troubleshooting Exercise"
+overview: |
+  This simulation presents a production line where raw ingredients are mixed, formed into sheets, baked, and then routed into separate sweet and savory branches.
+  Sweet sheets receive frosting, savory sheets receive seasoning, and both converge at a QualityCheck before final packing. Use the information below to identify the misbehaving machine.
+
+devices:
+  - id: "RM"
+    name: "RawMixer"
+    description: "Takes raw ingredients and combines them into a uniform dough."
+  - id: "SH"
+    name: "Sheeter"
+    description: "Rolls the dough into thin sheets before baking."
+  - id: "OV"
+    name: "Oven"
+    description: "Bakes all dough sheets (both sweet and savory) at the correct temperature."
+  - id: "SPT"
+    name: "Splitter"
+    description: "After baking, diverts each sheet into either the SweetLine or the SavoryLine."
+  - id: "SL"
+    name: "SweetLine Entry"
+    description: "Entry point for sweet sheets after splitting."
+  - id: "SVL"
+    name: "SavoryLine Entry"
+    description: "Entry point for savory sheets after splitting."
+  - id: "FR"
+    name: "FrostingLine"
+    description: "Adds frosting to sweet sheets only."
+  - id: "SPC"
+    name: "SpiceLine"
+    description: "Sprinkles savory seasoning on savory sheets only."
+  - id: "QC"
+    name: "QualityCheck"
+    description: "Inspects both sweet and savory items; accepts good ones and rejects any that fail criteria."
+  - id: "SHD"
+    name: "ShadingLamp"
+    description: "Provides a final visual color check under special lighting (applies to both sweet and savory outputs)."
+  - id: "PK"
+    name: "Packer"
+    description: "Takes accepted items from QualityCheck, wraps them, and moves them into the Finished Goods area."
+
+topology: |
+  flowchart TB
+      RM["🥣 RawMixer (RM)"]
+      SH["🔄 Sheeter (SH)"]
+      OV["🔥 Oven (OV)"]
+      SPT["↗️ Splitter (SPT)"]
+      SL["🍭 SweetLine Entry (SL)"]
+      SVL["🥓 SavoryLine Entry (SVL)"]
+      FR["🍯 FrostingLine (FR)"]
+      SPC["🌶️ SpiceLine (SPC)"]
+      QC["🔍 QualityCheck (QC)"]
+      SHD["💡 ShadingLamp (SHD)"]
+      PK["📦 Packer (PK)"]
+
+      %% Common Upstream:
+      RM --- SH
+      SH --- OV
+      OV --- SPT
+
+      %% Sweet Branch:
+      SPT ---|Sweet Sheets| SL
+      SL --- FR
+      FR --- QC
+
+      %% Savory Branch:
+      SPT ---|Savory Sheets| SVL
+      SVL --- SPC
+      SPC --- QC
+
+      %% Final Shared Path:
+      QC --- SHD
+      SHD --- PK
+
+paths:
+  - title: "Common Upstream Path"
+    description: "RM → SH → OV → SPT (all dough passes through here first)"
+  - title: "Sweet Branch Path"
+    description: "SPT → SL → FR → QC → SHD → PK"
+    note: "Sweet sheets are frosted and then inspected by QualityCheck."
+  - title: "Savory Branch Path"
+    description: "SPT → SVL → SPC → QC → SHD → PK"
+    note: "Savory sheets are seasoned and then inspected by QualityCheck."
+  - title: "Final Shared Path"
+    description: "QC → SHD → PK (only accepted items proceed)"
+    note: "ShadingLamp and Packer handle both sweet and savory after QC."
+
+test_results:
+  sweet:
+    heading: "Sweet Production Run (Working)"
+    status: success
+    details: |
+      A batch of sweet items using the sweet recipe at RawMixer
+      passes through Sheeter, Oven, Splitter, FrostingLine, and QualityCheck,
+      then moves on to ShadingLamp and Packer successfully.
+  savory:
+    heading: "Savory Production Run (Failing)"
+    status: failure
+    details: |
+      A batch of savory items using the savory recipe at RawMixer
+      follows the path through Sheeter, Oven, Splitter, SpiceLine, and
+      reaches QualityCheck but is always marked 'defective' and rejected,
+      despite no visible defects.
+  spot_checks:
+    heading: "Spot‐Checks at Each Machine"
+    status: info
+    details: |
+      - RawMixer: Dough consistency and texture pass for both sweet and savory.
+      - Sheeter: Sheet thickness is correct for both types.
+      - Oven: Temperature logs confirm 180 °C and correct bake time; sheets have expected firmness and color.
+      - Splitter: Sensor confirms sweet sheets route to SL, savory to SVL.
+      - FrostingLine: Available only for sweet; frosting is applied correctly.
+      - SpiceLine: Available only for savory; seasoning amount is correct.
+      - QualityCheck: When sweet arrives, cameras and sensors confirm frosting and QC accepts them; when savory arrives, cameras show correct seasoning but QC rejects every savory sheet.
+      - ShadingLamp: Receives and passes sweet items; never receives savory because QC rejects them.
+      - Packer: Packages accepted items only (receives none from savory).
+
+  ping:
+    heading: "Machine‐to‐Machine Handshake Tests (All Working)"
+    status: success
+    results:
+      - "RM → SH"
+      - "SH → OV"
+      - "OV → SPT"
+      - "SPT → FR"
+      - "SPT → SPC"
+      - "FR → QC"
+      - "SPC → QC"
+      - "QC → SHD"
+      - "SHD → PK"
+  note: |
+    All handshake tests succeed—no machine is physically offline or disconnected.
+
+hints:
+  - "Observe that every machine in the dynamic (sweet) path functions normally, as sweet items pass end-to-end."
+  - "Savory items fail only at QualityCheck, even though upstream machines (RawMixer through SpiceLine) report correct operation."
+  - "All handshake (ping‐analog) tests succeed, so no machine is completely offline."
+  - "QualityCheck accepts sweet items but rejects every savory item despite correct seasoning."
+  - "Therefore the issue must lie in QualityCheck’s internal inspection logic for savory items."
+
+validation:
+  correct_answer: "QC"
+  success_feedback: "Correct! QualityCheck (QC) is faulty. It misclassifies every savory sheet as defective, even though all upstream steps and machine handshakes are working correctly and sweet items pass QC without issue."
+  failure_feedback: "Incorrect. The faulty machine is QC. All upstream machines (RM through SPC) operate normally for savory items, but QC rejects all savory sheets despite correct seasoning and machine handshakes. This indicates a problem within QualityCheck itself."

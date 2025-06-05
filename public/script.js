@@ -1,23 +1,41 @@
 document.addEventListener('DOMContentLoaded', init);
 
 let hints = [];
+let currentScenario = '';
 
 async function init() {
     const deviceSelect = document.getElementById('deviceSelect');
     const reasoningTextarea = document.getElementById('reasoning');
     const submitBtn = document.getElementById('submitBtn');
     const feedbackDiv = document.getElementById('feedback');
+    const scenarioSelect = document.getElementById('scenarioSelect');
+    const scenarioToggle = document.getElementById('scenarioToggle');
+    const scenarioControls = document.getElementById('scenarioControls');
+    const uploadBtn = document.getElementById('scenarioUploadBtn');
+    const fileInput = document.getElementById('scenarioFile');
 
-    // Load scenario configuration
+    scenarioToggle.addEventListener('click', () => {
+        scenarioControls.classList.toggle('hidden');
+    });
+
     let scenario = {};
     try {
-        const res = await fetch('/api/scenario');
-        scenario = await res.json();
+        const listRes = await fetch('/api/scenarios');
+        const listData = await listRes.json();
+        currentScenario = listData.default;
+        listData.scenarios.forEach(name => {
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = name;
+            if (name === currentScenario) opt.selected = true;
+            scenarioSelect.appendChild(opt);
+        });
+        scenario = await loadScenario(currentScenario);
     } catch (err) {
-        console.error('Failed to load scenario configuration', err);
+        console.error('Failed to load scenarios', err);
         showFeedback('Unable to load scenario.', 'error', feedbackDiv);
         return;
-}
+    }
 
 function populateScenario(data) {
     document.getElementById('pageTitle').textContent = `🔧 ${data.title}`;
@@ -28,6 +46,8 @@ function populateScenario(data) {
 
     const deviceGrid = document.getElementById('deviceGrid');
     const select = document.getElementById('deviceSelect');
+    deviceGrid.innerHTML = '';
+    select.innerHTML = '<option value="">Select a device...</option>';
     data.devices.forEach(d => {
         const div = document.createElement('div');
         div.className = 'device-item';
@@ -62,6 +82,7 @@ function populateScenario(data) {
     }
 
     const pathInfo = document.getElementById('pathInfo');
+    pathInfo.innerHTML = '';
     data.paths.forEach(p => {
         const item = document.createElement('div');
         item.className = 'path-item';
@@ -72,35 +93,111 @@ function populateScenario(data) {
     const testSection = document.getElementById('testResults');
     testSection.innerHTML = '<h2>🧪 Observed Test Results</h2>';
 
-    const dyn = document.createElement('div');
-    dyn.className = 'test-category';
-    dyn.innerHTML = `<h3>✅ ${data.test_results.dynamic.heading}</h3><div class="test-result success">` +
-        data.test_results.dynamic.details.split('\n').map(p => `<p>${p}</p>`).join('') +
-        '</div>';
-    testSection.appendChild(dyn);
+    Object.keys(data.test_results).forEach(key => {
+        const result = data.test_results[key];
 
-    const sta = document.createElement('div');
-    sta.className = 'test-category';
-    sta.innerHTML = `<h3>❌ ${data.test_results.static.heading}</h3><div class="test-result failure">` +
-        data.test_results.static.details.split('\n').map(p => `<p>${p}</p>`).join('') +
-        '</div>';
-    testSection.appendChild(sta);
+        if (key === 'ping' && Array.isArray(result.results)) {
+            const ping = document.createElement('div');
+            ping.className = 'test-category';
 
-    const ping = document.createElement('div');
-    ping.className = 'test-category';
-    let pingHtml = `<h3>🏓 ${data.test_results.ping.heading}</h3><div class="ping-results">`;
-    data.test_results.ping.results.forEach(r => {
-        pingHtml += `<div class="ping-item">${r} <span class="status-badge success">✅</span></div>`;
+            let pingHtml = `<h3>🏓 ${result.heading}</h3><div class="ping-results">`;
+            result.results.forEach(r => {
+                pingHtml += `<div class="ping-item">${r} <span class="status-badge success">✅</span></div>`;
+            });
+            pingHtml += '</div>';
+            if (result.note) {
+                pingHtml += `<p class="note">${result.note}</p>`;
+            }
+            ping.innerHTML = pingHtml;
+            testSection.appendChild(ping);
+        } else if (result && result.heading && result.details) {
+            const div = document.createElement('div');
+            div.className = 'test-category';
+
+            let statusClass = '';
+            let icon = 'ℹ️';
+            const status = (result.status || '').toLowerCase();
+            if (['success', 'pass', 'working'].includes(status)) {
+                icon = '✅';
+                statusClass = 'success';
+            } else if (['failure', 'fail'].includes(status)) {
+                icon = '❌';
+                statusClass = 'failure';
+            } else if (status === 'info') {
+                icon = 'ℹ️';
+            } else {
+                const lower = result.heading.toLowerCase();
+                if (lower.includes('working') || lower.includes('pass')) {
+                    icon = '✅';
+                    statusClass = 'success';
+                } else if (lower.includes('fail')) {
+                    icon = '❌';
+                    statusClass = 'failure';
+                }
+            }
+
+            div.innerHTML = `<h3>${icon} ${result.heading}</h3><div class="test-result ${statusClass}">` +
+                result.details.split('\n').map(p => `<p>${p}</p>`).join('') +
+                '</div>';
+            testSection.appendChild(div);
+        }
     });
-    pingHtml += '</div>';
-    pingHtml += `<p class="note">${data.test_results.ping.note}</p>`;
-    ping.innerHTML = pingHtml;
-    testSection.appendChild(ping);
 
     hints = data.hints || [];
 }
 
+async function loadScenario(name) {
+    try {
+        const res = await fetch(`/api/scenario?name=${encodeURIComponent(name)}`);
+        const data = await res.json();
+        populateScenario(data);
+        return data;
+    } catch (err) {
+        console.error('Failed to load scenario', err);
+    }
+}
+
     populateScenario(scenario);
+
+    scenarioSelect.addEventListener('change', async () => {
+        currentScenario = scenarioSelect.value;
+        await loadScenario(currentScenario);
+        checkFormValidity();
+    });
+
+    uploadBtn.addEventListener('click', async () => {
+        if (!fileInput.files.length) return;
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+        uploadBtn.textContent = 'Uploading...';
+        uploadBtn.disabled = true;
+        try {
+            const uploadRes = await fetch('/api/scenario/upload', {
+                method: 'POST',
+                body: formData
+            });
+            const uploadData = await uploadRes.json();
+            scenarioSelect.innerHTML = '';
+            const listRes = await fetch('/api/scenarios');
+            const listData = await listRes.json();
+            listData.scenarios.forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                scenarioSelect.appendChild(opt);
+            });
+            currentScenario = uploadData.name;
+            scenarioSelect.value = currentScenario;
+            await loadScenario(currentScenario);
+            checkFormValidity();
+            fileInput.value = '';
+        } catch (err) {
+            console.error('Upload failed', err);
+        } finally {
+            uploadBtn.textContent = 'Upload';
+            uploadBtn.disabled = false;
+        }
+    });
 
     // Add event listeners
     submitBtn.addEventListener('click', () => handleSubmit(deviceSelect, reasoningTextarea, submitBtn, feedbackDiv));
@@ -138,7 +235,8 @@ function populateScenario(data) {
                 },
                 body: JSON.stringify({
                     deviceId: deviceId,
-                    reasoning: reasoning
+                    reasoning: reasoning,
+                    scenarioName: currentScenario
                 })
             });
 
