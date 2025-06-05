@@ -42,9 +42,13 @@ function populateScenario(data) {
 
     const diagramEl = document.getElementById('topologyDiagram');
     diagramEl.textContent = data.topology;
+
     // Render the Mermaid diagram after inserting the text
     if (window.mermaid) {
         try {
+            // Ensure the element is treated as unprocessed
+            diagramEl.removeAttribute('data-processed');
+
             if (typeof mermaid.run === 'function') {
                 mermaid.run({ nodes: [diagramEl] });
             } else if (typeof mermaid.init === 'function') {
