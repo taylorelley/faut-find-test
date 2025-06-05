@@ -15,7 +15,12 @@ async function init() {
     const fileInput = document.getElementById('scenarioFile');
 
     scenarioToggle.addEventListener('click', () => {
-        scenarioControls.classList.toggle('hidden');
+        const hidden = scenarioControls.classList.toggle('hidden');
+        scenarioToggle.setAttribute('aria-expanded', String(!hidden));
+    });
+
+    fileInput.addEventListener('change', () => {
+        uploadBtn.disabled = !fileInput.files.length;
     });
 
     let scenario = {};

@@ -12,13 +12,13 @@
         <header>
             <h1 id="pageTitle">🔧 Troubleshooting Exercise</h1>
             <div class="scenario-menu">
-                <button id="scenarioToggle" class="scenario-btn">⚙️ Scenarios</button>
-                <div id="scenarioControls" class="scenario-controls hidden">
+                <button id="scenarioToggle" class="scenario-btn" aria-haspopup="true" aria-expanded="false">⚙️ Scenarios</button>
+                <div id="scenarioControls" class="scenario-controls hidden" role="menu">
+                    <label for="scenarioSelect" class="visually-hidden">Scenario</label>
                     <select id="scenarioSelect"></select>
-                    <label class="upload-label">
-                        <input type="file" id="scenarioFile" accept=".yaml,.yml" class="hidden">
-                        <span id="scenarioUploadBtn" class="scenario-upload">Upload</span>
-                    </label>
+                    <label for="scenarioFile" class="scenario-upload btn-file">Choose File</label>
+                    <input type="file" id="scenarioFile" accept=".yaml,.yml" class="visually-hidden">
+                    <button id="scenarioUploadBtn" class="scenario-upload-btn" disabled>Upload</button>
                 </div>
             </div>
         </header>
