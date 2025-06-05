@@ -376,8 +376,10 @@ header p {
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     display: flex;
+    flex-direction: column;
     gap: 8px;
-    align-items: center;
+    align-items: stretch;
+    width: 220px;
     z-index: 10;
 }
 
@@ -396,12 +398,13 @@ header p {
     display: block;
     font-weight: bold;
     margin-bottom: 4px;
+    color: #000;
 }
 
 .btn-file,
 .scenario-upload-btn {
     display: inline-block;
-    width: 120px;
+    width: 100%;
     text-align: center;
     box-sizing: border-box;
 }
