@@ -87,19 +87,22 @@ paths:
 test_results:
   sweet:
     heading: "Sweet Production Run (Working)"
+    status: success
     details: |
-      A batch of sweet items using the sweet recipe at RawMixer 
+      A batch of sweet items using the sweet recipe at RawMixer
       passes through Sheeter, Oven, Splitter, FrostingLine, and QualityCheck,
       then moves on to ShadingLamp and Packer successfully.
   savory:
     heading: "Savory Production Run (Failing)"
+    status: failure
     details: |
-      A batch of savory items using the savory recipe at RawMixer 
+      A batch of savory items using the savory recipe at RawMixer
       follows the path through Sheeter, Oven, Splitter, SpiceLine, and
       reaches QualityCheck but is always marked 'defective' and rejected,
       despite no visible defects.
   spot_checks:
     heading: "Spot‐Checks at Each Machine"
+    status: info
     details: |
       - RawMixer: Dough consistency and texture pass for both sweet and savory.
       - Sheeter: Sheet thickness is correct for both types.
@@ -111,18 +114,19 @@ test_results:
       - ShadingLamp: Receives and passes sweet items; never receives savory because QC rejects them.
       - Packer: Packages accepted items only (receives none from savory).
 
-ping:
-  heading: "Machine‐to‐Machine Handshake Tests (All Working)"
-  results:
-    - "RM → SH"
-    - "SH → OV"
-    - "OV → SPT"
-    - "SPT → FR"
-    - "SPT → SPC"
-    - "FR → QC"
-    - "SPC → QC"
-    - "QC → SHD"
-    - "SHD → PK"
+  ping:
+    heading: "Machine‐to‐Machine Handshake Tests (All Working)"
+    status: success
+    results:
+      - "RM → SH"
+      - "SH → OV"
+      - "OV → SPT"
+      - "SPT → FR"
+      - "SPT → SPC"
+      - "FR → QC"
+      - "SPC → QC"
+      - "QC → SHD"
+      - "SHD → PK"
   note: |
     All handshake tests succeed—no machine is physically offline or disconnected.
 
