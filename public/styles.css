@@ -262,7 +262,8 @@ header p {
 }
 
 .submit-btn:disabled {
-    opacity: 0.6;
+    background: #ccc;
+    color: #666;
     cursor: not-allowed;
     transform: none;
 }
@@ -374,14 +375,15 @@ header p {
     padding: 6px;
 }
 
-.scenario-upload,
-.scenario-upload-btn,
-.btn-file {
-    background: #00B5E2;
-    color: #FFFFFF;
-    border-radius: 6px;
-    padding: 6px 12px;
-    cursor: pointer;
+.btn-file,
+.scenario-upload-btn {
+    display: inline-block;
+}
+
+.scenario-upload-btn:disabled {
+    background: #ccc;
+    color: #666;
+    cursor: not-allowed;
 }
 
 .visually-hidden {
