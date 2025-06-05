@@ -1,11 +1,90 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', init);
+
+let hints = [];
+
+async function init() {
     const deviceSelect = document.getElementById('deviceSelect');
     const reasoningTextarea = document.getElementById('reasoning');
     const submitBtn = document.getElementById('submitBtn');
     const feedbackDiv = document.getElementById('feedback');
 
+    // Load scenario configuration
+    let scenario = {};
+    try {
+        const res = await fetch('/api/scenario');
+        scenario = await res.json();
+    } catch (err) {
+        console.error('Failed to load scenario configuration', err);
+        showFeedback('Unable to load scenario.', 'error', feedbackDiv);
+        return;
+}
+
+function populateScenario(data) {
+    document.getElementById('pageTitle').textContent = `🔧 ${data.title}`;
+
+    const overviewSection = document.getElementById('overviewSection');
+    overviewSection.innerHTML = '<h2>Exercise Overview</h2>' +
+        data.overview.split('\n').map(p => `<p>${p}</p>`).join('');
+
+    const deviceGrid = document.getElementById('deviceGrid');
+    const select = document.getElementById('deviceSelect');
+    data.devices.forEach(d => {
+        const div = document.createElement('div');
+        div.className = 'device-item';
+        div.innerHTML = `<strong>${d.id} - ${d.name}</strong><p>${d.description}</p>`;
+        deviceGrid.appendChild(div);
+
+        const opt = document.createElement('option');
+        opt.value = d.id;
+        opt.textContent = `${d.id} - ${d.name}`;
+        select.appendChild(opt);
+    });
+
+    document.getElementById('topologyDiagram').textContent = data.topology;
+
+    const pathInfo = document.getElementById('pathInfo');
+    data.paths.forEach(p => {
+        const item = document.createElement('div');
+        item.className = 'path-item';
+        item.innerHTML = `<h4>${p.title}</h4><p>${p.description}</p>` + (p.note ? `<small>${p.note}</small>` : '');
+        pathInfo.appendChild(item);
+    });
+
+    const testSection = document.getElementById('testResults');
+    testSection.innerHTML = '<h2>🧪 Observed Test Results</h2>';
+
+    const dyn = document.createElement('div');
+    dyn.className = 'test-category';
+    dyn.innerHTML = `<h3>✅ ${data.test_results.dynamic.heading}</h3><div class="test-result success">` +
+        data.test_results.dynamic.details.split('\n').map(p => `<p>${p}</p>`).join('') +
+        '</div>';
+    testSection.appendChild(dyn);
+
+    const sta = document.createElement('div');
+    sta.className = 'test-category';
+    sta.innerHTML = `<h3>❌ ${data.test_results.static.heading}</h3><div class="test-result failure">` +
+        data.test_results.static.details.split('\n').map(p => `<p>${p}</p>`).join('') +
+        '</div>';
+    testSection.appendChild(sta);
+
+    const ping = document.createElement('div');
+    ping.className = 'test-category';
+    let pingHtml = `<h3>🏓 ${data.test_results.ping.heading}</h3><div class="ping-results">`;
+    data.test_results.ping.results.forEach(r => {
+        pingHtml += `<div class="ping-item">${r} <span class="status-badge success">✅</span></div>`;
+    });
+    pingHtml += '</div>';
+    pingHtml += `<p class="note">${data.test_results.ping.note}</p>`;
+    ping.innerHTML = pingHtml;
+    testSection.appendChild(ping);
+
+    hints = data.hints || [];
+}
+
+    populateScenario(scenario);
+
     // Add event listeners
-    submitBtn.addEventListener('click', handleSubmit);
+    submitBtn.addEventListener('click', () => handleSubmit(deviceSelect, reasoningTextarea, submitBtn, feedbackDiv));
     
     // Enable submit button only when both fields are filled
     function checkFormValidity() {
@@ -19,18 +98,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initial check
     checkFormValidity();
 
-    async function handleSubmit() {
-        const deviceId = deviceSelect.value;
-        const reasoning = reasoningTextarea.value.trim();
+    async function handleSubmit(selectEl, textEl, buttonEl, feedback) {
+        const deviceId = selectEl.value;
+        const reasoning = textEl.value.trim();
 
         if (!deviceId || !reasoning) {
-            showFeedback('Please select a device and provide your reasoning.', 'error');
+            showFeedback('Please select a device and provide your reasoning.', 'error', feedback);
             return;
         }
 
         // Disable submit button during request
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Checking...';
+        buttonEl.disabled = true;
+        buttonEl.textContent = 'Checking...';
 
         try {
             const response = await fetch('/api/validate', {
@@ -45,31 +124,31 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             const result = await response.json();
-            
+
             if (result.correct) {
-                showFeedback(result.feedback, 'success');
+                showFeedback(result.feedback, 'success', feedback);
                 celebrateSuccess();
             } else {
-                showFeedback(result.feedback, 'error');
+                showFeedback(result.feedback, 'error', feedback);
             }
 
         } catch (error) {
-            showFeedback('Error validating your answer. Please try again.', 'error');
+            showFeedback('Error validating your answer. Please try again.', 'error', feedback);
             console.error('Validation error:', error);
         } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Submit Diagnosis';
+            buttonEl.disabled = false;
+            buttonEl.textContent = 'Submit Diagnosis';
             checkFormValidity(); // Re-enable if form is still valid
         }
     }
 
-    function showFeedback(message, type) {
-        feedbackDiv.textContent = message;
-        feedbackDiv.className = `feedback ${type}`;
-        feedbackDiv.classList.remove('hidden');
-        
+    function showFeedback(message, type, target) {
+        target.textContent = message;
+        target.className = `feedback ${type}`;
+        target.classList.remove('hidden');
+
         // Scroll to feedback
-        feedbackDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
     function celebrateSuccess() {
@@ -132,13 +211,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.head.appendChild(style);
 
     // Add helpful hints functionality
-    const hints = [
-        "Notice that both dynamic and static traffic share the same upstream path through AS→BH→GC→ZS...",
-        "All ping tests succeed, so it's not a connectivity issue anywhere in the network...",
-        "Dynamic requests work end-to-end through the entire shared path and processing cluster...",
-        "Static requests fail after ZetaSplit, but ZS→TF1 and TF1→TF2 both respond to ping...",
-        "The failure happens somewhere in the static security gateway chain, but which stage?"
-    ];
 
     let hintIndex = 0;
     

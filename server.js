@@ -1,8 +1,20 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
+const yaml = require('js-yaml');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Load scenario configuration
+let scenario = {};
+try {
+  const data = fs.readFileSync(path.join(__dirname, 'scenario.yaml'), 'utf8');
+  scenario = yaml.load(data);
+} catch (err) {
+  console.error('Failed to load scenario.yaml', err);
+  process.exit(1);
+}
 
 // Serve static files
 app.use(express.static('public'));
@@ -13,20 +25,22 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Endpoint to provide scenario configuration to the frontend
+app.get('/api/scenario', (req, res) => {
+  res.json(scenario);
+});
+
 // API endpoint to validate answers
 app.post('/api/validate', (req, res) => {
-  const { deviceId, reasoning } = req.body;
-  
-  const correctAnswer = 'TF2';
-  const isCorrect = deviceId.toUpperCase() === correctAnswer;
-  
-  let feedback = '';
-  if (isCorrect) {
-    feedback = 'Correct! TF2 (ThetaFire-B) is indeed the faulty device. Since all pings succeed (including ZS→TF1, TF1→TF2, TF2→KS) and all dynamic requests work through the shared upstream path, the problem must be TF2\'s internal policy dropping all static traffic despite being reachable.';
-  } else {
-    feedback = `Incorrect. The faulty device is ${correctAnswer}. Key insight: Dynamic requests work end-to-end through AS→BH→GC→ZS→DG→EB→IC→EM→KS, proving all those devices work. Static requests fail in the ZS→TF1→TF2→KS path, but all hops respond to ping. This points to TF2's internal filtering logic being broken.`;
-  }
-  
+  const { deviceId } = req.body;
+
+  const correctAnswer = scenario.validation.correct_answer;
+  const isCorrect = deviceId.toUpperCase() === correctAnswer.toUpperCase();
+
+  const feedback = isCorrect
+    ? scenario.validation.success_feedback
+    : scenario.validation.failure_feedback;
+
   res.json({
     correct: isCorrect,
     feedback: feedback,
