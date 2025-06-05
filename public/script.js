@@ -72,30 +72,55 @@ function populateScenario(data) {
     const testSection = document.getElementById('testResults');
     testSection.innerHTML = '<h2>🧪 Observed Test Results</h2>';
 
-    const dyn = document.createElement('div');
-    dyn.className = 'test-category';
-    dyn.innerHTML = `<h3>✅ ${data.test_results.dynamic.heading}</h3><div class="test-result success">` +
-        data.test_results.dynamic.details.split('\n').map(p => `<p>${p}</p>`).join('') +
-        '</div>';
-    testSection.appendChild(dyn);
+    Object.keys(data.test_results).forEach(key => {
+        const result = data.test_results[key];
 
-    const sta = document.createElement('div');
-    sta.className = 'test-category';
-    sta.innerHTML = `<h3>❌ ${data.test_results.static.heading}</h3><div class="test-result failure">` +
-        data.test_results.static.details.split('\n').map(p => `<p>${p}</p>`).join('') +
-        '</div>';
-    testSection.appendChild(sta);
+        if (key === 'ping' && Array.isArray(result.results)) {
+            const ping = document.createElement('div');
+            ping.className = 'test-category';
 
-    const ping = document.createElement('div');
-    ping.className = 'test-category';
-    let pingHtml = `<h3>🏓 ${data.test_results.ping.heading}</h3><div class="ping-results">`;
-    data.test_results.ping.results.forEach(r => {
-        pingHtml += `<div class="ping-item">${r} <span class="status-badge success">✅</span></div>`;
+            let pingHtml = `<h3>🏓 ${result.heading}</h3><div class="ping-results">`;
+            result.results.forEach(r => {
+                pingHtml += `<div class="ping-item">${r} <span class="status-badge success">✅</span></div>`;
+            });
+            pingHtml += '</div>';
+            if (result.note) {
+                pingHtml += `<p class="note">${result.note}</p>`;
+            }
+            ping.innerHTML = pingHtml;
+            testSection.appendChild(ping);
+        } else if (result && result.heading && result.details) {
+            const div = document.createElement('div');
+            div.className = 'test-category';
+
+            let statusClass = '';
+            let icon = 'ℹ️';
+            const status = (result.status || '').toLowerCase();
+            if (['success', 'pass', 'working'].includes(status)) {
+                icon = '✅';
+                statusClass = 'success';
+            } else if (['failure', 'fail'].includes(status)) {
+                icon = '❌';
+                statusClass = 'failure';
+            } else if (status === 'info') {
+                icon = 'ℹ️';
+            } else {
+                const lower = result.heading.toLowerCase();
+                if (lower.includes('working') || lower.includes('pass')) {
+                    icon = '✅';
+                    statusClass = 'success';
+                } else if (lower.includes('fail')) {
+                    icon = '❌';
+                    statusClass = 'failure';
+                }
+            }
+
+            div.innerHTML = `<h3>${icon} ${result.heading}</h3><div class="test-result ${statusClass}">` +
+                result.details.split('\n').map(p => `<p>${p}</p>`).join('') +
+                '</div>';
+            testSection.appendChild(div);
+        }
     });
-    pingHtml += '</div>';
-    pingHtml += `<p class="note">${data.test_results.ping.note}</p>`;
-    ping.innerHTML = pingHtml;
-    testSection.appendChild(ping);
 
     hints = data.hints || [];
 }
