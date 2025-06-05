@@ -40,7 +40,16 @@ function populateScenario(data) {
         select.appendChild(opt);
     });
 
-    document.getElementById('topologyDiagram').textContent = data.topology;
+    const diagramEl = document.getElementById('topologyDiagram');
+    diagramEl.textContent = data.topology;
+    // Render the Mermaid diagram after inserting the text
+    if (window.mermaid) {
+        if (typeof mermaid.init === 'function') {
+            mermaid.init(undefined, diagramEl);
+        } else if (typeof mermaid.contentLoaded === 'function') {
+            mermaid.contentLoaded();
+        }
+    }
 
     const pathInfo = document.getElementById('pathInfo');
     data.paths.forEach(p => {
