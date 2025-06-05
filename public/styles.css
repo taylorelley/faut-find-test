@@ -385,13 +385,25 @@ header p {
     display: none;
 }
 
+
 .scenario-controls select {
-    padding: 6px;
+    padding: 8px;
+    min-width: 180px;
+    font-size: 1rem;
+}
+
+.scenario-controls label.menu-title {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 4px;
 }
 
 .btn-file,
 .scenario-upload-btn {
     display: inline-block;
+    width: 120px;
+    text-align: center;
+    box-sizing: border-box;
 }
 
 .scenario-upload-btn:disabled {
