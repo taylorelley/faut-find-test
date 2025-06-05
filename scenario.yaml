@@ -1,137 +1,139 @@
-title: "Signal-Routing Troubleshooting Exercise"
+title: "Production‐Line QualityCheck Troubleshooting Exercise"
 overview: |
-  This simulation presents a signal-routing system where every request first flows through AlphaStation, BetaHub, GammaCore and ZetaSplit.
-  Dynamic signals then run through a processing cluster before reaching storage, while static signals pass two security gateways. Use the information below to identify the misbehaving device.
+  This simulation presents a production line where raw ingredients are mixed, formed into sheets, baked, and then routed into separate sweet and savory branches.
+  Sweet sheets receive frosting, savory sheets receive seasoning, and both converge at a QualityCheck before final packing. Use the information below to identify the misbehaving machine.
 
 devices:
-  - id: "AS"
-    name: "AlphaStation"
-    description: "Labels each incoming signal as dynamic or static, then forwards to BetaHub"
-  - id: "BH"
-    name: "BetaHub"
-    description: "Aggregator: collects signals from AlphaStation, tags them 'ready,' sends upstream to GammaCore"
-  - id: "GC"
-    name: "GammaCore"
-    description: "Central nexus: inspects each incoming signal and sends all traffic to ZetaSplit first"
-  - id: "ZS"
-    name: "ZetaSplit"
-    description: "Splits dynamic signal into two identical streams for parallel processing. Static signals pass through unchanged"
-  - id: "DG"
-    name: "DeltaGate"
-    description: "Filter: allows only 'priority-dynamic' signals through; drops non-priority dynamic. All static signals are dropped"
-  - id: "EB"
-    name: "EtaBalancer"
-    description: "Balancer: takes signals from DeltaGate and distributes them (round-robin) to IotaCompute nodes"
-  - id: "IC1"
-    name: "IotaCompute 1"
-    description: "Compute node: processes dynamic streams, forwards 'processed-dynamic' output to EpsilonMerge"
-  - id: "IC2"
-    name: "IotaCompute 2"
-    description: "Compute node: processes dynamic streams, forwards 'processed-dynamic' output to EpsilonMerge"
-  - id: "EM"
-    name: "EpsilonMerge"
-    description: "Merger: combines two 'processed-dynamic' streams into one consolidated stream and sends to KappaStore"
-  - id: "KS"
-    name: "KappaStore"
-    description: "Storage node: holds both static assets (pure archive data) and merged dynamic results (from EM)"
-  - id: "TF1"
-    name: "ThetaFire-A"
-    description: "Stage-1 security gateway for static traffic only. Static signals are sent here; forwards to TF2. Dynamic signals do not go to TF1"
-  - id: "TF2"
-    name: "ThetaFire-B"
-    description: "Stage-2 security gateway for static traffic only. Performs deeper policy checks before forwarding static to KappaStore"
-  - id: "LR"
-    name: "LambdaRouter"
-    description: "Egress node: requests tagged 'external' are sent here (irrelevant to storage)"
+  - id: "RM"
+    name: "RawMixer"
+    description: "Takes raw ingredients and combines them into a uniform dough."
+  - id: "SH"
+    name: "Sheeter"
+    description: "Rolls the dough into thin sheets before baking."
+  - id: "OV"
+    name: "Oven"
+    description: "Bakes all dough sheets (both sweet and savory) at the correct temperature."
+  - id: "SPT"
+    name: "Splitter"
+    description: "After baking, diverts each sheet into either the SweetLine or the SavoryLine."
+  - id: "SL"
+    name: "SweetLine Entry"
+    description: "Entry point for sweet sheets after splitting."
+  - id: "SVL"
+    name: "SavoryLine Entry"
+    description: "Entry point for savory sheets after splitting."
+  - id: "FR"
+    name: "FrostingLine"
+    description: "Adds frosting to sweet sheets only."
+  - id: "SPC"
+    name: "SpiceLine"
+    description: "Sprinkles savory seasoning on savory sheets only."
+  - id: "QC"
+    name: "QualityCheck"
+    description: "Inspects both sweet and savory items; accepts good ones and rejects any that fail criteria."
+  - id: "SHD"
+    name: "ShadingLamp"
+    description: "Provides a final visual color check under special lighting (applies to both sweet and savory outputs)."
+  - id: "PK"
+    name: "Packer"
+    description: "Takes accepted items from QualityCheck, wraps them, and moves them into the Finished Goods area."
 
 topology: |
   flowchart TB
-      AS["🖥️ AlphaStation (AS)"]
-      BH["🔀 BetaHub (BH)"]
-      GC["🔹 GammaCore (GC)"]
-      ZS["↗️ ZetaSplit (ZS)"]
-      DG["⚠️ DeltaGate (DG)"]
-      EB["⚖️ EtaBalancer (EB)"]
-      IC1["⚙️ IotaCompute 1 (IC₁)"]
-      IC2["⚙️ IotaCompute 2 (IC₂)"]
-      EM["🔗 EpsilonMerge (EM)"]
-      KS["💾 KappaStore (KS)"]
-      TF1["🛡️ ThetaFire-A (TF1)"]
-      TF2["🛡️ ThetaFire-B (TF2)"]
-      LR["🌐 LambdaRouter (LR)"]
+      RM["🥣 RawMixer (RM)"]
+      SH["🔄 Sheeter (SH)"]
+      OV["🔥 Oven (OV)"]
+      SPT["↗️ Splitter (SPT)"]
+      SL["🍭 SweetLine Entry (SL)"]
+      SVL["🥓 SavoryLine Entry (SVL)"]
+      FR["🍯 FrostingLine (FR)"]
+      SPC["🌶️ SpiceLine (SPC)"]
+      QC["🔍 QualityCheck (QC)"]
+      SHD["💡 ShadingLamp (SHD)"]
+      PK["📦 Packer (PK)"]
 
       %% Common Upstream:
-      AS --- BH
-      BH --- GC
-      GC --- ZS
+      RM --- SH
+      SH --- OV
+      OV --- SPT
 
-      %% Dynamic Path:
-      ZS --- DG
-      DG --- EB
-      EB --- IC1
-      EB --- IC2
-      IC1 --- EM
-      IC2 --- EM
-      EM --- KS
+      %% Sweet Branch:
+      SPT ---|Sweet Sheets| SL
+      SL --- FR
+      FR --- QC
 
-      %% Static Path:
-      ZS --- TF1
-      TF1 --- TF2
-      TF2 --- KS
+      %% Savory Branch:
+      SPT ---|Savory Sheets| SVL
+      SVL --- SPC
+      SPC --- QC
 
-      %% External Egress:
-      GC --- LR
+      %% Final Shared Path:
+      QC --- SHD
+      SHD --- PK
 
 paths:
   - title: "Common Upstream Path"
-    description: "AS → BH → GC → ZS (all traffic flows through here first)"
-  - title: "Dynamic Path (Processing Cluster)"
-    description: "ZS → DG → EB → IC₁ & IC₂ → EM → KS"
-    note: "ZetaSplit duplicates dynamic signals; only priority-dynamic survives DeltaGate"
-  - title: "Static Path (Archive)"
-    description: "ZS → TF1 → TF2 → KS"
-    note: "ZetaSplit passes static signals unchanged to security gateways"
-  - title: "External Egress"
-    description: "GC → LR (irrelevant to storage)"
+    description: "RM → SH → OV → SPT (all dough passes through here first)"
+  - title: "Sweet Branch Path"
+    description: "SPT → SL → FR → QC → SHD → PK"
+    note: "Sweet sheets are frosted and then inspected by QualityCheck."
+  - title: "Savory Branch Path"
+    description: "SPT → SVL → SPC → QC → SHD → PK"
+    note: "Savory sheets are seasoned and then inspected by QualityCheck."
+  - title: "Final Shared Path"
+    description: "QC → SHD → PK (only accepted items proceed)"
+    note: "ShadingLamp and Packer handle both sweet and savory after QC."
 
 test_results:
-  dynamic:
-    heading: "Dynamic Requests (Working)"
+  sweet:
+    heading: "Sweet Production Run (Working)"
     details: |
-      From AlphaStation (AS):
-      Every request labeled "dynamic" (priority or non-priority) that should run through the dynamic pipeline (ZS→DG→EB→IC₁/IC₂→EM→KS) SUCCESS
-      This confirms that priority-dynamic splitting, load-balancing, computing, merging, and final storage into KS all work correctly.
-  static:
-    heading: "Static Requests (Failing)"
+      A batch of sweet items using the sweet recipe at RawMixer 
+      passes through Sheeter, Oven, Splitter, FrostingLine, and QualityCheck,
+      then moves on to ShadingLamp and Packer successfully.
+  savory:
+    heading: "Savory Production Run (Failing)"
     details: |
-      From GammaCore (GC) or upstream:
-      Every request labeled "static" that should follow (ZS→TF1→TF2→KS) TIMEOUT/REJECTED
-      Important: No explicit "destination unreachable" message—requests simply never complete.
-  ping:
-    heading: "Ping/Reachability Tests (All Working)"
-    results:
-      - "GC → ZS"
-      - "ZS → DG"
-      - "DG → EB"
-      - "EB → IC₁"
-      - "EB → IC₂"
-      - "IC₁ → EM"
-      - "IC₂ → EM"
-      - "EM → KS"
-      - "ZS → TF1"
-      - "TF1 → TF2"
-      - "TF2 → KS"
-      - "GC → LR"
-    note: "All links and devices respond to ping—no broken cables or physical connectivity issues."
+      A batch of savory items using the savory recipe at RawMixer 
+      follows the path through Sheeter, Oven, Splitter, SpiceLine, and
+      reaches QualityCheck but is always marked 'defective' and rejected,
+      despite no visible defects.
+  spot_checks:
+    heading: "Spot‐Checks at Each Machine"
+    details: |
+      - RawMixer: Dough consistency and texture pass for both sweet and savory.
+      - Sheeter: Sheet thickness is correct for both types.
+      - Oven: Temperature logs confirm 180 °C and correct bake time; sheets have expected firmness and color.
+      - Splitter: Sensor confirms sweet sheets route to SL, savory to SVL.
+      - FrostingLine: Available only for sweet; frosting is applied correctly.
+      - SpiceLine: Available only for savory; seasoning amount is correct.
+      - QualityCheck: When sweet arrives, cameras and sensors confirm frosting and QC accepts them; when savory arrives, cameras show correct seasoning but QC rejects every savory sheet.
+      - ShadingLamp: Receives and passes sweet items; never receives savory because QC rejects them.
+      - Packer: Packages accepted items only (receives none from savory).
+
+ping:
+  heading: "Machine‐to‐Machine Handshake Tests (All Working)"
+  results:
+    - "RM → SH"
+    - "SH → OV"
+    - "OV → SPT"
+    - "SPT → FR"
+    - "SPT → SPC"
+    - "FR → QC"
+    - "SPC → QC"
+    - "QC → SHD"
+    - "SHD → PK"
+  note: |
+    All handshake tests succeed—no machine is physically offline or disconnected.
 
 hints:
-  - "Notice that both dynamic and static traffic share the same upstream path through AS→BH→GC→ZS..."
-  - "All ping tests succeed, so it's not a connectivity issue anywhere in the network..."
-  - "Dynamic requests work end-to-end through the entire shared path and processing cluster..."
-  - "Static requests fail after ZetaSplit, but ZS→TF1 and TF1→TF2 both respond to ping..."
-  - "The failure happens somewhere in the static security gateway chain, but which stage?"
+  - "Observe that every machine in the dynamic (sweet) path functions normally, as sweet items pass end-to-end."
+  - "Savory items fail only at QualityCheck, even though upstream machines (RawMixer through SpiceLine) report correct operation."
+  - "All handshake (ping‐analog) tests succeed, so no machine is completely offline."
+  - "QualityCheck accepts sweet items but rejects every savory item despite correct seasoning."
+  - "Therefore the issue must lie in QualityCheck’s internal inspection logic for savory items."
 
 validation:
-  correct_answer: "TF2"
-  success_feedback: "Correct! TF2 (ThetaFire-B) is indeed the faulty device. Since all pings succeed (including ZS→TF1, TF1→TF2, TF2→KS) and all dynamic requests work through the shared upstream path, the problem must be TF2's internal policy dropping all static traffic despite being reachable."
-  failure_feedback: "Incorrect. The faulty device is TF2. Key insight: Dynamic requests work end-to-end through AS→BH→GC→ZS→DG→EB→IC→EM→KS, proving all those devices work. Static requests fail in the ZS→TF1→TF2→KS path, but all hops respond to ping. This points to TF2's internal filtering logic being broken."
+  correct_answer: "QC"
+  success_feedback: "Correct! QualityCheck (QC) is faulty. It misclassifies every savory sheet as defective, even though all upstream steps and machine handshakes are working correctly and sweet items pass QC without issue."
+  failure_feedback: "Incorrect. The faulty machine is QC. All upstream machines (RM through SPC) operate normally for savory items, but QC rejects all savory sheets despite correct seasoning and machine handshakes. This indicates a problem within QualityCheck itself."
