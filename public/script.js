@@ -11,11 +11,35 @@ async function init() {
     const scenarioSelect = document.getElementById('scenarioSelect');
     const scenarioToggle = document.getElementById('scenarioToggle');
     const scenarioControls = document.getElementById('scenarioControls');
+    const scenarioMenu = document.getElementById('scenarioMenu');
     const uploadBtn = document.getElementById('scenarioUploadBtn');
     const fileInput = document.getElementById('scenarioFile');
 
-    scenarioToggle.addEventListener('click', () => {
-        scenarioControls.classList.toggle('hidden');
+    function hideScenarioMenu() {
+        if (scenarioMenu.hasAttribute('open')) {
+            scenarioMenu.removeAttribute('open');
+            scenarioToggle.setAttribute('aria-expanded', 'false');
+        }
+    }
+
+    scenarioMenu.addEventListener('toggle', () => {
+        scenarioToggle.setAttribute('aria-expanded', String(scenarioMenu.hasAttribute('open')));
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!scenarioMenu.contains(e.target)) {
+            hideScenarioMenu();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            hideScenarioMenu();
+        }
+    });
+
+    fileInput.addEventListener('change', () => {
+        uploadBtn.disabled = !fileInput.files.length;
     });
 
     let scenario = {};
@@ -163,6 +187,7 @@ async function loadScenario(name) {
         currentScenario = scenarioSelect.value;
         await loadScenario(currentScenario);
         checkFormValidity();
+        hideScenarioMenu();
     });
 
     uploadBtn.addEventListener('click', async () => {
@@ -191,6 +216,7 @@ async function loadScenario(name) {
             await loadScenario(currentScenario);
             checkFormValidity();
             fileInput.value = '';
+            hideScenarioMenu();
         } catch (err) {
             console.error('Upload failed', err);
         } finally {

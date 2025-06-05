@@ -19,8 +19,11 @@ body {
 }
 
 header {
+    position: relative;
     text-align: center;
     margin-bottom: 30px;
+    padding-top: 10px;
+    padding-right: 60px; /* space for scenario button */
     color: white;
 }
 
@@ -261,7 +264,8 @@ header p {
 }
 
 .submit-btn:disabled {
-    opacity: 0.6;
+    background: #ccc;
+    color: #666;
     cursor: not-allowed;
     transform: none;
 }
@@ -338,10 +342,20 @@ header p {
     align-items: stretch;
 }
 
-/* Scenario selection menu */
 .scenario-menu {
-    position: relative;
+    position: absolute;
+    top: 10px;
+    right: 10px;
     display: inline-block;
+}
+
+.scenario-menu summary {
+    list-style: none;
+    cursor: pointer;
+}
+
+.scenario-menu summary::-webkit-details-marker {
+    display: none;
 }
 
 .scenario-btn {
@@ -349,7 +363,8 @@ header p {
     border: none;
     color: white;
     cursor: pointer;
-    font-size: 1rem;
+    font-size: 1.5rem;
+    padding: 8px;
 }
 
 .scenario-controls {
@@ -361,24 +376,55 @@ header p {
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     display: flex;
+    flex-direction: column;
     gap: 8px;
-    align-items: center;
+    align-items: stretch;
+    width: 220px;
     z-index: 10;
 }
 
-.scenario-controls select {
-    padding: 6px;
+.scenario-menu:not([open]) .scenario-controls {
+    display: none;
 }
 
-.scenario-upload {
-    background: #00B5E2;
-    color: #FFFFFF;
-    border-radius: 6px;
-    padding: 6px 12px;
-    cursor: pointer;
+
+.scenario-controls select {
+    padding: 8px;
+    min-width: 180px;
+    font-size: 1rem;
 }
-.upload-label input {
-    display: none;
+
+.scenario-controls label.menu-title {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 4px;
+    color: #000;
+}
+
+.btn-file,
+.scenario-upload-btn {
+    display: inline-block;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.scenario-upload-btn:disabled {
+    background: #ccc;
+    color: #666;
+    cursor: not-allowed;
+}
+
+.visually-hidden {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
 .legend-topology .device-legend {
