@@ -11,21 +11,19 @@ async function init() {
     const scenarioSelect = document.getElementById('scenarioSelect');
     const scenarioToggle = document.getElementById('scenarioToggle');
     const scenarioControls = document.getElementById('scenarioControls');
-    const scenarioMenu = document.querySelector('.scenario-menu');
+    const scenarioMenu = document.getElementById('scenarioMenu');
     const uploadBtn = document.getElementById('scenarioUploadBtn');
     const fileInput = document.getElementById('scenarioFile');
 
     function hideScenarioMenu() {
-        if (!scenarioControls.classList.contains('hidden')) {
-            scenarioControls.classList.add('hidden');
+        if (scenarioMenu.hasAttribute('open')) {
+            scenarioMenu.removeAttribute('open');
             scenarioToggle.setAttribute('aria-expanded', 'false');
         }
     }
 
-    scenarioToggle.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const hidden = scenarioControls.classList.toggle('hidden');
-        scenarioToggle.setAttribute('aria-expanded', String(!hidden));
+    scenarioMenu.addEventListener('toggle', () => {
+        scenarioToggle.setAttribute('aria-expanded', String(scenarioMenu.hasAttribute('open')));
     });
 
     document.addEventListener('click', (e) => {

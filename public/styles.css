@@ -340,12 +340,20 @@ header p {
     align-items: stretch;
 }
 
-/* Scenario selection menu */
 .scenario-menu {
     position: absolute;
     top: 0;
     right: 0;
     display: inline-block;
+}
+
+.scenario-menu summary {
+    list-style: none;
+    cursor: pointer;
+}
+
+.scenario-menu summary::-webkit-details-marker {
+    display: none;
 }
 
 .scenario-btn {
@@ -369,6 +377,10 @@ header p {
     gap: 8px;
     align-items: center;
     z-index: 10;
+}
+
+.scenario-menu:not([open]) .scenario-controls {
+    display: none;
 }
 
 .scenario-controls select {
