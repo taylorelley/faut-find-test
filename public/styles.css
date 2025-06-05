@@ -228,7 +228,7 @@ header p {
 }
 
 .form-group select option {
-    background: #00B5E2;
+    background: #ffffff;
     color: #000000;
 }
 
@@ -339,11 +339,11 @@ header p {
 }
 
 .legend-topology .device-legend {
-    flex: 0 0 40%;
+    flex: 0 0 calc(40% - 10px);
 }
 
 .legend-topology .system-topology {
-    flex: 0 0 60%;
+    flex: 0 0 calc(60% - 10px);
 }
 
 /* Custom scrollbar for better UX */
