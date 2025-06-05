@@ -367,7 +367,7 @@ async function loadScenario(name) {
             const hintDiv = document.createElement('div');
             hintDiv.className = 'feedback';
             hintDiv.style.background = 'rgba(255,255,255,0.2)';
-            hintDiv.style.color = 'white';
+            hintDiv.style.color = 'black';
             hintDiv.style.border = '1px solid rgba(255,255,255,0.3)';
             hintDiv.textContent = `Hint ${hintIndex + 1}: ${hints[hintIndex]}`;
             
