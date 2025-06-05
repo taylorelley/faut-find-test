@@ -11,12 +11,22 @@ async function init() {
     const scenarioSelect = document.getElementById('scenarioSelect');
     const scenarioToggle = document.getElementById('scenarioToggle');
     const scenarioControls = document.getElementById('scenarioControls');
+    const scenarioMenu = document.querySelector('.scenario-menu');
     const uploadBtn = document.getElementById('scenarioUploadBtn');
     const fileInput = document.getElementById('scenarioFile');
 
     scenarioToggle.addEventListener('click', () => {
         const hidden = scenarioControls.classList.toggle('hidden');
         scenarioToggle.setAttribute('aria-expanded', String(!hidden));
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!scenarioMenu.contains(e.target)) {
+            if (!scenarioControls.classList.contains('hidden')) {
+                scenarioControls.classList.add('hidden');
+                scenarioToggle.setAttribute('aria-expanded', 'false');
+            }
+        }
     });
 
     fileInput.addEventListener('change', () => {
