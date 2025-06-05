@@ -40,7 +40,26 @@ function populateScenario(data) {
         select.appendChild(opt);
     });
 
-    document.getElementById('topologyDiagram').textContent = data.topology;
+    const diagramEl = document.getElementById('topologyDiagram');
+    diagramEl.textContent = data.topology;
+
+    // Render the Mermaid diagram after inserting the text
+    if (window.mermaid) {
+        try {
+            // Ensure the element is treated as unprocessed
+            diagramEl.removeAttribute('data-processed');
+
+            if (typeof mermaid.run === 'function') {
+                mermaid.run({ nodes: [diagramEl] });
+            } else if (typeof mermaid.init === 'function') {
+                mermaid.init(undefined, [diagramEl]);
+            } else if (typeof mermaid.contentLoaded === 'function') {
+                mermaid.contentLoaded();
+            }
+        } catch (err) {
+            console.error('Mermaid rendering failed:', err);
+        }
+    }
 
     const pathInfo = document.getElementById('pathInfo');
     data.paths.forEach(p => {
