@@ -247,4 +247,4 @@ function populateScenario(data) {
     });
     
     submitBtn.parentNode.appendChild(hintBtn);
-});
+}
