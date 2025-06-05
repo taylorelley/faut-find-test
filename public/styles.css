@@ -338,6 +338,49 @@ header p {
     align-items: stretch;
 }
 
+/* Scenario selection menu */
+.scenario-menu {
+    position: relative;
+    display: inline-block;
+}
+
+.scenario-btn {
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.scenario-controls {
+    position: absolute;
+    right: 0;
+    top: 110%;
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    z-index: 10;
+}
+
+.scenario-controls select {
+    padding: 6px;
+}
+
+.scenario-upload {
+    background: #00B5E2;
+    color: #FFFFFF;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+.upload-label input {
+    display: none;
+}
+
 .legend-topology .device-legend {
     flex: 0 0 calc(40% - 10px);
 }

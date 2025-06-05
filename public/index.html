@@ -11,6 +11,16 @@
     <div class="container">
         <header>
             <h1 id="pageTitle">🔧 Troubleshooting Exercise</h1>
+            <div class="scenario-menu">
+                <button id="scenarioToggle" class="scenario-btn">⚙️ Scenarios</button>
+                <div id="scenarioControls" class="scenario-controls hidden">
+                    <select id="scenarioSelect"></select>
+                    <label class="upload-label">
+                        <input type="file" id="scenarioFile" accept=".yaml,.yml" class="hidden">
+                        <span id="scenarioUploadBtn" class="scenario-upload">Upload</span>
+                    </label>
+                </div>
+            </div>
         </header>
 
         <section class="card overview-box" id="overviewSection">
