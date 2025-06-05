@@ -44,10 +44,16 @@ function populateScenario(data) {
     diagramEl.textContent = data.topology;
     // Render the Mermaid diagram after inserting the text
     if (window.mermaid) {
-        if (typeof mermaid.init === 'function') {
-            mermaid.init(undefined, diagramEl);
-        } else if (typeof mermaid.contentLoaded === 'function') {
-            mermaid.contentLoaded();
+        try {
+            if (typeof mermaid.run === 'function') {
+                mermaid.run({ nodes: [diagramEl] });
+            } else if (typeof mermaid.init === 'function') {
+                mermaid.init(undefined, [diagramEl]);
+            } else if (typeof mermaid.contentLoaded === 'function') {
+                mermaid.contentLoaded();
+            }
+        } catch (err) {
+            console.error('Mermaid rendering failed:', err);
         }
     }
 
