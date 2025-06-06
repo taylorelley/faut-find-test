@@ -1,0 +1,138 @@
+title: "Image Processing Pipeline Troubleshooting Exercise"
+overview: |
+  This simulation presents a real‐time image processing pipeline where camera feeds are normalized, split for parallel analytics,
+  and also sent for batch archival.  Real‐time analytics detect anomalies and generate alerts, while batch archives compress 
+  images before storing.  Use the information below to identify the misbehaving device.
+
+devices:
+  - id: "CA"
+    name: "CameraArray"
+    description: "Captures raw images and forwards them to the Normalizer."
+  - id: "NZ"
+    name: "Normalizer"
+    description: "Adjusts brightness/contrast and standardizes image format for downstream processing."
+  - id: "SP"
+    name: "Splitter"
+    description: "Duplicates each normalized image stream: one copy goes to real‐time analytics, one to feature extraction."
+  - id: "AD"
+    name: "AnomalyDetector"
+    description: "Analyzes images for anomalies; forwards anomaly alerts to AlertSystem if found."
+  - id: "FE"
+    name: "FeatureExtractor"
+    description: "Extracts feature vectors from images and sends them to Aggregator."
+  - id: "AG"
+    name: "Aggregator"
+    description: "Combines feature vectors into a unified report; passes report on to AlertSystem."
+  - id: "CP"
+    name: "Compressor"
+    description: "Compresses normalized images into archive format for storage."
+  - id: "ST"
+    name: "Storage"
+    description: "Holds compressed image archives and stores any anomaly reports."
+  - id: "AL"
+    name: "AlertSystem"
+    description: "Receives alerts/reports from AnomalyDetector and Aggregator; logs and notifies operators."
+
+topology: |
+  flowchart TB
+      CA["📷 CameraArray (CA)"]
+      NZ["🔧 Normalizer (NZ)"]
+      SP["🔀 Splitter (SP)"]
+      AD["🕵️ AnomalyDetector (AD)"]
+      FE["🔍 FeatureExtractor (FE)"]
+      AG["📊 Aggregator (AG)"]
+      CP["📦 Compressor (CP)"]
+      ST["💾 Storage (ST)"]
+      AL["🚨 AlertSystem (AL)"]
+
+      CA --- NZ
+      NZ --- SP
+
+      SP --- AD
+      SP --- FE
+      AD --- AL
+      FE --- AG
+      AG --- AL
+
+      NZ --- CP
+      CP --- ST
+
+paths:
+  - title: "Common Upstream Path"
+    description: "CA → NZ → SP (all images pass through normalization and splitting first)."
+  - title: "Real‐Time Analytics Path"
+    description: "SP → AD → AL and SP → FE → AG → AL"
+    note: "Splitter feeds two parallel analytics branches: AnomalyDetector for immediate alerts, and FeatureExtractor → Aggregator for periodic reports."
+  - title: "Batch Storage Path"
+    description: "NZ → CP → ST"
+    note: "Compressor packages normalized images for archive; Storage holds compressed archives."
+  - title: "Alert Path"
+    description: "AD → AL and AG → AL"
+    note: "AlertSystem logs anomalies and aggregated reports for operator review."
+
+test_results:
+  analytics:
+    heading: "Real‐Time Analytics Stream (Working)"
+    status: success
+    details: |
+      From CameraArray (CA):
+      - Every image sent as “real‐time” follows NZ→SP→AD→AL, generating anomaly alerts correctly when conditions are met.
+      - In parallel, images follow SP→FE→AG→AL; feature reports arrive at AlertSystem without errors.
+      This confirms the real‐time analytics branches (AD and FE→AG) and AlertSystem functions are operational.
+  batch:
+    heading: "Batch Storage Stream (Failing)"
+    status: failure
+    details: |
+      From Normalizer (NZ):
+      - Every image marked for archiving follows NZ→CP→ST but fails to appear in Storage (ST).
+      - No explicit “error” is logged—images are simply not stored.
+      This indicates the archival (batch) path is broken somewhere between NZ, Compressor, and Storage.
+  spot_checks:
+    heading: "Spot‐Checks at Each Device"
+    status: info
+    details: |
+      - CameraArray: Captures frames and forwards correctly to Normalizer for both real‐time and batch.
+      - Normalizer: Outputs standardized images to both Splitter and Compressor; logs confirm correct operation.
+      - Splitter: Confirmation logs show two identical streams forwarded to AD and FE for each image.
+      - AnomalyDetector: Detects anomalies in test images and sends alerts to AlertSystem; operator receives alerts.
+      - FeatureExtractor: Extracts features and forwards to Aggregator; Aggregator combines and sends to AlertSystem successfully.
+      - Aggregator: Receives features, builds report, and sends to AlertSystem; all reports are logged at AlertSystem.
+      - AlertSystem: Receives anomaly alerts and aggregated reports without issue.
+      - Storage: Remains empty of new archives despite batch runs.
+      - Compressor: Sensor logs indicate compression steps occur, but no output arrives in Storage.
+
+ping:
+  heading: "Device‐to‐Device Handshake Tests"
+  results:
+    - pair: "CA → NZ"
+      status: success
+    - pair: "NZ → SP"
+      status: success
+    - pair: "SP → AD"
+      status: success
+    - pair: "SP → FE"
+      status: success
+    - pair: "AD → AL"
+      status: success
+    - pair: "FE → AG"
+      status: success
+    - pair: "AG → AL"
+      status: success
+    - pair: "NZ → CP"
+      status: success
+    - pair: "CP → ST"
+      status: success
+  note: |
+    All handshake tests succeed—no device is offline or disconnected.  Real‐time analytics devices all respond and log correctly; batch path devices respond to handshakes, though archives never appear in Storage.
+
+hints:
+  - "Notice that real‐time analytics (CA→NZ→SP→AD→AL and CA→NZ→SP→FE→AG→AL) function perfectly, so AD, FE, AG, and AL are all healthy."
+  - "Batch archival (NZ→CP→ST) is the only path failing; both NZ→CP and CP→ST handshakes succeed, so physical connectivity is intact."
+  - "Since Normalizer (NZ) forwards correctly to both Splitter and Compressor, the issue must be deeper in the batch pipeline."
+  - "Storage (ST) receives no archives, but Storage’s handshake to Compressor succeeds—Compression is happening but Storage never records any new images."
+  - "Therefore the fault lies in the Compressor’s internal logic that should forward compressed archives to Storage."
+
+validation:
+  correct_answer: "CP"
+  success_feedback: "Correct! Compressor (CP) is faulty. Although it responds to handshakes from Normalizer and Storage, it fails to actually send compressed archives to Storage."
+  failure_feedback: "Incorrect. The faulty device is Compressor (CP). Real‐time analytics work end‐to‐end, and all handshakes succeed, but no batch archives reach Storage, indicating a flaw inside CP."
