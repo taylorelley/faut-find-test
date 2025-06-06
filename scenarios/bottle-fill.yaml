@@ -109,30 +109,30 @@ test_results:
       - QualityCheck: Inspects only bottles that pass upstream; passed bottles are accepted without issue.
       - Packer: Packages accepted bottles normally; throughput unaffected for good bottles.
 
-ping:
-  heading: "Device‐to‐Device Handshake Tests"
-  results:
-    - pair: "BF → CP"
-      status: success
-    - pair: "CP → SP"
-      status: success
-    - pair: "SP → LT"
-      status: success
-    - pair: "SP → WC"
-      status: success
-    - pair: "LT → MB"
-      status: success
-    - pair: "WC → MB"
-      status: success
-    - pair: "MB → LB"
-      status: success
-    - pair: "LB → QC"
-      status: success
-    - pair: "QC → PK"
-      status: success
-  note: |
-    All handshake tests succeed—no machine is completely offline or disconnected. Connectivity between 
-    every pair is confirmed.
+  ping:
+    heading: "Device‐to‐Device Handshake Tests"
+    results:
+      - pair: "BF → CP"
+        status: success
+      - pair: "CP → SP"
+        status: success
+      - pair: "SP → LT"
+        status: success
+      - pair: "SP → WC"
+        status: success
+      - pair: "LT → MB"
+        status: success
+      - pair: "WC → MB"
+        status: success
+      - pair: "MB → LB"
+        status: success
+      - pair: "LB → QC"
+        status: success
+      - pair: "QC → PK"
+        status: success
+    note: |
+      All handshake tests succeed—no machine is completely offline or disconnected. Connectivity between 
+      every pair is confirmed.
 
 hints:
   - "Both LeakTester and WeightChecker report failures for the same set of bottles, suggesting a common upstream issue."
