@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', init);
 
 let hints = [];
 let currentScenario = '';
+let devices = [];
 
 async function init() {
     const deviceSelect = document.getElementById('deviceSelect');
@@ -68,15 +69,18 @@ function populateScenario(data) {
     overviewSection.innerHTML = '<h2>Exercise Overview</h2>' +
         data.overview.split('\n').map(p => `<p>${p}</p>`).join('');
 
+    devices = data.devices;
     const deviceGrid = document.getElementById('deviceGrid');
     const select = document.getElementById('deviceSelect');
-    deviceGrid.innerHTML = '';
+    if (deviceGrid) deviceGrid.innerHTML = '';
     select.innerHTML = '<option value="">Select a device...</option>';
     data.devices.forEach(d => {
-        const div = document.createElement('div');
-        div.className = 'device-item';
-        div.innerHTML = `<strong>${d.id} - ${d.name}</strong><p>${d.description}</p>`;
-        deviceGrid.appendChild(div);
+        if (deviceGrid) {
+            const div = document.createElement('div');
+            div.className = 'device-item';
+            div.innerHTML = `<strong>${d.id} - ${d.name}</strong><p>${d.description}</p>`;
+            deviceGrid.appendChild(div);
+        }
 
         const opt = document.createElement('option');
         opt.value = d.id;
@@ -104,6 +108,8 @@ function populateScenario(data) {
             console.error('Mermaid rendering failed:', err);
         }
     }
+
+    attachTooltipHandlers();
 
     const pathInfo = document.getElementById('pathInfo');
     pathInfo.innerHTML = '';
@@ -311,6 +317,41 @@ async function loadScenario(name) {
 
         // Scroll to feedback
         target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function attachTooltipHandlers() {
+        const container = document.querySelector('.topology-container');
+        const tooltip = document.getElementById('deviceTooltip');
+        if (!container || !tooltip) return;
+        const svg = container.querySelector('svg');
+        if (!svg) return;
+
+        const hide = (e) => {
+            if (!tooltip.contains(e.target)) {
+                tooltip.classList.add('hidden');
+            }
+        };
+
+        document.addEventListener('click', hide);
+
+        svg.querySelectorAll('.node').forEach(node => {
+            node.style.cursor = 'pointer';
+            node.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const label = node.textContent || '';
+                const match = label.match(/\(([^)]+)\)\s*$/);
+                if (!match) return;
+                const id = match[1];
+                const device = devices.find(d => d.id === id);
+                if (!device) return;
+                tooltip.innerHTML = `<strong>${device.id} - ${device.name}</strong><p>${device.description}</p>`;
+                const rect = node.getBoundingClientRect();
+                const contRect = container.getBoundingClientRect();
+                tooltip.style.left = `${rect.left - contRect.left + rect.width / 2}px`;
+                tooltip.style.top = `${rect.top - contRect.top + rect.height + 10}px`;
+                tooltip.classList.remove('hidden');
+            });
+        });
     }
 
     function celebrateSuccess() {
