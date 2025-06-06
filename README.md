@@ -34,7 +34,7 @@ A scenario file describes all content shown in the UI. The example in `scenarios
 - `devices` – list of device IDs, names and descriptions
 - `topology` – Mermaid diagram syntax
 - `paths` – summary of the traffic flows
-- `test_results` – observed behaviours for the user to analyse
+- `test_results` – observed behaviours for the user to analyse (ping tests can specify `status` for each pair)
 - `hints` – progressive hints displayed on request
 - `validation` – the correct answer and feedback messages
 

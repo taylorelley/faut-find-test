@@ -126,7 +126,26 @@ function populateScenario(data) {
 
             let pingHtml = `<h3>🏓 ${result.heading}</h3><div class="ping-results">`;
             result.results.forEach(r => {
-                pingHtml += `<div class="ping-item">${r} <span class="status-badge success">✅</span></div>`;
+                let text = r;
+                let status = 'success';
+
+                if (typeof r === 'object' && r !== null) {
+                    text = r.pair || r.test || r.name || r.target || '';
+                    status = r.status || 'success';
+                }
+
+                const lower = String(status).toLowerCase();
+                let badgeClass = '';
+                let icon = 'ℹ️';
+                if (['success', 'pass', 'working'].includes(lower)) {
+                    badgeClass = 'success';
+                    icon = '✅';
+                } else if (['failure', 'fail'].includes(lower)) {
+                    badgeClass = 'failure';
+                    icon = '❌';
+                }
+
+                pingHtml += `<div class="ping-item">${text} <span class="status-badge ${badgeClass}">${icon}</span></div>`;
             });
             pingHtml += '</div>';
             if (result.note) {
