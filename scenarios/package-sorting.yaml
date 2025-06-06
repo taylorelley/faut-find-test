@@ -1,3 +1,4 @@
+---
 title: "Automated Package Sorting System Troubleshooting Exercise"
 overview: |
   This simulation presents an automated package sorting system. Incoming packages are conveyed in, scanned for destination,
@@ -76,13 +77,13 @@ test_results:
     heading: "Zone A Packages (Working)"
     status: success
     details: |
-      A batch of Zone A packages travels through InfeedConveyor → ScanStation → Diverter → SorterA → MergeStation 
+      A batch of Zone A packages travels through InfeedConveyor → ScanStation → Diverter → SorterA → MergeStation
       → WeightChecker → LabelPrinter → OutfeedConveyor and all reach the shipping dock correctly, with accurate weights and labels.
   zone_b:
     heading: "Zone B Packages (Failing)"
     status: failure
     details: |
-      A batch of Zone B packages follows InfeedConveyor → ScanStation → Diverter → SorterB → MergeStation 
+      A batch of Zone B packages follows InfeedConveyor → ScanStation → Diverter → SorterB → MergeStation
       → WeightChecker → LabelPrinter → OutfeedConveyor but never appear at MergeStation. They seem to stall immediately after Diverter.
   spot_checks:
     heading: "Spot‐Checks at Each Device"
@@ -131,4 +132,4 @@ hints:
 validation:
   correct_answer: "SB"
   success_feedback: "Correct! SorterB (SB) is faulty. Its handshake with the Diverter fails, and Zone B packages never exit toward MergeStation, confirming SorterB is the culprit."
-  failure_feedback: "Incorrect. The faulty device is SorterB (SB). The handshake test Diverter → SorterB fails, and Zone B packages stall at SorterB, while Zone A processing proceeds normally."```
+  failure_feedback: "Incorrect. The faulty device is SorterB (SB). The handshake test Diverter → SorterB fails, and Zone B packages stall at SorterB, while Zone A processing proceeds normally."

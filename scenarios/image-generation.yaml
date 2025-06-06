@@ -1,7 +1,8 @@
+---
 title: "Image Processing Pipeline Troubleshooting Exercise"
 overview: |
   This simulation presents a real‐time image processing pipeline where camera feeds are normalized, split for parallel analytics,
-  and also sent for batch archival.  Real‐time analytics detect anomalies and generate alerts, while batch archives compress 
+  and also sent for batch archival.  Real‐time analytics detect anomalies and generate alerts, while batch archives compress
   images before storing.  Use the information below to identify the misbehaving device.
 
 devices:
