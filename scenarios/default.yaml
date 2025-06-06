@@ -136,7 +136,8 @@ test_results:
         status: success
       - pair: "SHD → PK"
         status: success
-  note: "All handshake tests succeed—no machine is physically offline or disconnected."
+    note: |
+      All handshake tests succeed—no machine is physically offline or disconnected.
 
 hints:
   - "Observe that every machine in the dynamic (sweet) path functions normally, as sweet items pass end-to-end."
