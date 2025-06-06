@@ -115,18 +115,27 @@ test_results:
       - Packer: Packages accepted items only (receives none from savory).
 
   ping:
-    heading: "Machine‐to‐Machine Handshake Tests (All Working)"
+    heading: "Machine‐to‐Machine Handshake Tests"
     status: success
     results:
-      - "RM → SH"
-      - "SH → OV"
-      - "OV → SPT"
-      - "SPT → FR"
-      - "SPT → SPC"
-      - "FR → QC"
-      - "SPC → QC"
-      - "QC → SHD"
-      - "SHD → PK"
+      - pair: "RM → SH"
+        status: success
+      - pair: "SH → OV"
+        status: success
+      - pair: "OV → SPT"
+        status: success
+      - pair: "SPT → FR"
+        status: success
+      - pair: "SPT → SPC"
+        status: success
+      - pair: "FR → QC"
+        status: success
+      - pair: "SPC → QC"
+        status: success
+      - pair: "QC → SHD"
+        status: success
+      - pair: "SHD → PK"
+        status: success
   note: |
     All handshake tests succeed—no machine is physically offline or disconnected.
 
