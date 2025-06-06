@@ -1,0 +1,134 @@
+title: "Automated Package Sorting System Troubleshooting Exercise"
+overview: |
+  This simulation presents an automated package sorting system. Incoming packages are conveyed in, scanned for destination,
+  and then diverted to one of two sorters (Zone A or Zone B). After sorting, packages merge back, undergo weight and label checks,
+  and move out to the shipping dock. Use the information below to identify the faulty device or link, given that one handshake has failed.
+
+devices:
+  - id: "IC"
+    name: "InfeedConveyor"
+    description: "Moves incoming packages onto the system."
+  - id: "SS"
+    name: "ScanStation"
+    description: "Reads each package’s barcode and determines its zone (A or B)."
+  - id: "DV"
+    name: "Diverter"
+    description: "Redirects packages toward SorterA (Zone A) or SorterB (Zone B) based on ScanStation output."
+  - id: "SA"
+    name: "SorterA"
+    description: "Sorts packages destined for Zone A and sends them to the MergeStation."
+  - id: "SB"
+    name: "SorterB"
+    description: "Sorts packages destined for Zone B and sends them to the MergeStation."
+  - id: "MS"
+    name: "MergeStation"
+    description: "Merges outputs from both sorters into a single stream for final processing."
+  - id: "WC"
+    name: "WeightChecker"
+    description: "Verifies each merged package’s weight against expected values."
+  - id: "LP"
+    name: "LabelPrinter"
+    description: "Prints and applies the correct shipping label to each package."
+  - id: "OC"
+    name: "OutfeedConveyor"
+    description: "Conveys labeled packages out to the shipping dock."
+
+topology: |
+  flowchart TB
+      IC["↗️ InfeedConveyor (IC)"]
+      SS["🔍 ScanStation (SS)"]
+      DV["🔀 Diverter (DV)"]
+      SA["📦 SorterA (SA)"]
+      SB["📦 SorterB (SB)"]
+      MS["🔗 MergeStation (MS)"]
+      WC["⚖️ WeightChecker (WC)"]
+      LP["🏷️ LabelPrinter (LP)"]
+      OC["🚚 OutfeedConveyor (OC)"]
+
+      IC --- SS
+      SS --- DV
+
+      DV ---|Zone A| SA
+      DV ---|Zone B| SB
+
+      SA --- MS
+      SB --- MS
+
+      MS --- WC
+      WC --- LP
+      LP --- OC
+
+paths:
+  - title: "Common Upstream Path"
+    description: "IC → SS → DV (all packages flow through scanning and diversion first)."
+  - title: "Zone A Sorting Path"
+    description: "DV → SA → MS → WC → LP → OC"
+    note: "Packages destined for Zone A go through SorterA, then merge back."
+  - title: "Zone B Sorting Path"
+    description: "DV → SB → MS → WC → LP → OC"
+    note: "Packages destined for Zone B go through SorterB, then merge back."
+  - title: "Final Processing Path"
+    description: "MS → WC → LP → OC"
+    note: "After merging, all packages undergo weight check, labeling, and exit."
+
+test_results:
+  zone_a:
+    heading: "Zone A Packages (Working)"
+    status: success
+    details: |
+      A batch of Zone A packages travels through InfeedConveyor → ScanStation → Diverter → SorterA → MergeStation 
+      → WeightChecker → LabelPrinter → OutfeedConveyor and all reach the shipping dock correctly, with accurate weights and labels.
+  zone_b:
+    heading: "Zone B Packages (Failing)"
+    status: failure
+    details: |
+      A batch of Zone B packages follows InfeedConveyor → ScanStation → Diverter → SorterB → MergeStation 
+      → WeightChecker → LabelPrinter → OutfeedConveyor but never appear at MergeStation. They seem to stall immediately after Diverter.
+  spot_checks:
+    heading: "Spot‐Checks at Each Device"
+    status: info
+    details: |
+      - InfeedConveyor: Packages move onto the belt without issue.
+      - ScanStation: Barcode scans correctly identify Zone A or Zone B for test packages.
+      - Diverter: Indicator LEDs show correct redirection to SorterA for Zone A packages; correct green diversion for Zone B.
+      - SorterA: Receives Zone A packages and pushes them onto MergeStation—confirmed by sensor logs at MergeStation for Zone A.
+      - SorterB: Sensor at SorterB’s input shows Zone B packages arriving, but no packages exit toward MergeStation.
+      - MergeStation: Merges only Zone A outputs; no Zone B packages observed merging.
+      - WeightChecker: Receives merged packages and logs normal weights for Zone A; no Zone B packages reach it.
+      - LabelPrinter: Receives labeled Zone A packages; no Zone B packages.
+      - OutfeedConveyor: Moves Zone A packages to docking area; empty for Zone B slot.
+
+  ping:
+    heading: "Device‐to‐Device Handshake Tests"
+    results:
+      - pair: "IC → SS"
+        status: success
+      - pair: "SS → DV"
+        status: success
+      - pair: "DV → SA"
+        status: success
+      - pair: "DV → SB"
+        status: failure
+      - pair: "SA → MS"
+        status: success
+      - pair: "SB → MS"
+        status: success
+      - pair: "MS → WC"
+        status: success
+      - pair: "WC → LP"
+        status: success
+      - pair: "LP → OC"
+        status: success
+    note: |
+      All handshakes succeed except the Diverter → SorterB link, which fails.  This suggests a connectivity or responsiveness issue specifically between Diverter and SorterB.
+
+hints:
+  - "Zone A packages traverse the entire system successfully, proving SorterA, MergeStation, WeightChecker, LabelPrinter, and OutfeedConveyor are functional."
+  - "Zone B packages stall right after Diverter. Sensors show they reach SorterB’s inlet, but no packages exit SorterB."
+  - "Ping from Diverter to SorterB fails, while Diverter to SorterA succeeds—indicating the link or SorterB itself is unresponsive."
+  - "Because SorterB’s handshake fails, the device is either offline or misconfigured internally."
+
+validation:
+  correct_answer: "SB"
+  success_feedback: "Correct! SorterB (SB) is faulty. Its handshake with the Diverter fails, and Zone B packages never exit toward MergeStation, confirming SorterB is the culprit."
+  failure_feedback: "Incorrect. The faulty device is SorterB (SB). The handshake test Diverter → SorterB fails, and Zone B packages stall at SorterB, while Zone A processing proceeds normally."```
