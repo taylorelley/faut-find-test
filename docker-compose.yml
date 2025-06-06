@@ -1,3 +1,4 @@
+---
 services:
   signal-routing-app:
     build: .
