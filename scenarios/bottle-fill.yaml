@@ -1,7 +1,7 @@
 title: "Automated Bottle Processing Line Troubleshooting Exercise"
 overview: |
   This simulation presents an automated bottle processing line. Bottles are filled, capped, then split 
-  for parallel leak and weight testing before merging back to be labeled, quality‐checked, and packed.
+  for parallel leak and weight testing before merging back to be labeled, quality-checked, and packed.
   Multiple symptoms arise from a single device failure. Use the information below to identify the misbehaving device.
 
 devices:
@@ -94,23 +94,23 @@ test_results:
       but sensors detect misaligned labels on about 30% of bottles. Manual inspection shows 
       labels sometimes wrap around the neck instead of the body, likely due to unstable cap placement.
   spot_checks:
-    heading: "Spot‐Checks at Each Machine"
+    heading: "Spot-Checks at Each Machine"
     status: info
     details: |
       - BottleFiller: Fills bottles to correct volume; sensors confirm fill level is within tolerance.
-      - Capper: Appears to engage but torque‐sensor logs show irregular torque readings (some successful, 
+      - Capper: Appears to engage but torque-sensor logs show irregular torque readings (some successful, 
         some very low or zero torque).
       - Splitter: Verification logs confirm bottles are correctly sent to LeakTester or WeightChecker.
       - LeakTester: Physically receives bottles and reports leaks; no mechanical jams detected.
       - WeightChecker: Receives bottles and registers underweight; scale calibration verified by test masses.
       - Merger: Combines both streams without jams; bottles flow freely to Labeler.
       - Labeler: Applies labels but misplacements occur; camera logs capture poor alignment correlating with 
-        loosely‐capped bottles.
+        loosely-capped bottles.
       - QualityCheck: Inspects only bottles that pass upstream; passed bottles are accepted without issue.
       - Packer: Packages accepted bottles normally; throughput unaffected for good bottles.
 
   ping:
-    heading: "Device‐to‐Device Handshake Tests"
+    heading: "Device-to-Device Handshake Tests"
     results:
       - pair: "BF → CP"
         status: success
@@ -144,4 +144,4 @@ hints:
 validation:
   correct_answer: "CP"
   success_feedback: "Correct! The Capper (CP) is faulty. Irregular torque readings, leaks detected around cap area, underweight readings (missing cap mass), and misaligned labels all stem from improperly applied caps."
-  failure_feedback: "Incorrect. The faulty device is the Capper (CP). LeakTester and WeightChecker both report issues that trace back to improperly applied caps, and Labeler misalignments align with cap instability."```
+  failure_feedback: "Incorrect. The faulty device is the Capper (CP). LeakTester and WeightChecker both report issues that trace back to improperly applied caps, and Labeler misalignments align with cap instability."
