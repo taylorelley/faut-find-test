@@ -102,29 +102,29 @@ test_results:
       - Storage: Remains empty of new archives despite batch runs.
       - Compressor: Sensor logs indicate compression steps occur, but no output arrives in Storage.
 
-ping:
-  heading: "Device‐to‐Device Handshake Tests"
-  results:
-    - pair: "CA → NZ"
-      status: success
-    - pair: "NZ → SP"
-      status: success
-    - pair: "SP → AD"
-      status: success
-    - pair: "SP → FE"
-      status: success
-    - pair: "AD → AL"
-      status: success
-    - pair: "FE → AG"
-      status: success
-    - pair: "AG → AL"
-      status: success
-    - pair: "NZ → CP"
-      status: success
-    - pair: "CP → ST"
-      status: success
-  note: |
-    All handshake tests succeed—no device is offline or disconnected.  Real‐time analytics devices all respond and log correctly; batch path devices respond to handshakes, though archives never appear in Storage.
+  ping:
+    heading: "Device‐to‐Device Handshake Tests"
+    results:
+      - pair: "CA → NZ"
+        status: success
+      - pair: "NZ → SP"
+        status: success
+      - pair: "SP → AD"
+        status: success
+      - pair: "SP → FE"
+        status: success
+      - pair: "AD → AL"
+        status: success
+      - pair: "FE → AG"
+        status: success
+      - pair: "AG → AL"
+        status: success
+      - pair: "NZ → CP"
+        status: success
+      - pair: "CP → ST"
+        status: success
+    note: |
+      All handshake tests succeed—no device is offline or disconnected.  Real‐time analytics devices all respond and log correctly; batch path devices respond to handshakes, though archives never appear in Storage.
 
 hints:
   - "Notice that real‐time analytics (CA→NZ→SP→AD→AL and CA→NZ→SP→FE→AG→AL) function perfectly, so AD, FE, AG, and AL are all healthy."
