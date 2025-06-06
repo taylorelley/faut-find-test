@@ -1,0 +1,147 @@
+title: "Automated Bottle Processing Line Troubleshooting Exercise"
+overview: |
+  This simulation presents an automated bottle processing line. Bottles are filled, capped, then split 
+  for parallel leak and weight testing before merging back to be labeled, quality‐checked, and packed.
+  Multiple symptoms arise from a single device failure. Use the information below to identify the misbehaving device.
+
+devices:
+  - id: "BF"
+    name: "BottleFiller"
+    description: "Fills empty bottles with liquid to the specified volume."
+  - id: "CP"
+    name: "Capper"
+    description: "Places and tightens caps on filled bottles."
+  - id: "SP"
+    name: "Splitter"
+    description: "Diverts capped bottles into two parallel testing lanes: LeakTester and WeightChecker."
+  - id: "LT"
+    name: "LeakTester"
+    description: "Tests each bottle for leaks by applying pressure and monitoring for drops."
+  - id: "WC"
+    name: "WeightChecker"
+    description: "Weighs each bottle to ensure it meets the target weight (including cap)."
+  - id: "MB"
+    name: "Merger"
+    description: "Recombines the two tested streams back into a single line for labeling."
+  - id: "LB"
+    name: "Labeler"
+    description: "Applies shipping labels to bottles after testing is complete."
+  - id: "QC"
+    name: "QualityCheck"
+    description: "Inspects labeled bottles for print alignment and overall appearance."
+  - id: "PK"
+    name: "Packer"
+    description: "Packages accepted bottles into boxes and moves them to the shipping area."
+
+topology: |
+  flowchart TB
+      BF["🍾 BottleFiller (BF)"]
+      CP["🛠️ Capper (CP)"]
+      SP["🔀 Splitter (SP)"]
+      LT["💧 LeakTester (LT)"]
+      WC["⚖️ WeightChecker (WC)"]
+      MB["🔗 Merger (MB)"]
+      LB["🏷️ Labeler (LB)"]
+      QC["🔍 QualityCheck (QC)"]
+      PK["📦 Packer (PK)"]
+
+      BF --- CP
+      CP --- SP
+
+      SP --- LT
+      SP --- WC
+
+      LT --- MB
+      WC --- MB
+
+      MB --- LB
+      LB --- QC
+      QC --- PK
+
+paths:
+  - title: "Common Upstream Path"
+    description: "BF → CP → SP (all bottles are filled, capped, then split for testing)."
+  - title: "Leak Test Path"
+    description: "SP → LT → MB"
+    note: "LeakTester applies pressure to detect leaks; bottles then merge back."
+  - title: "Weight Test Path"
+    description: "SP → WC → MB"
+    note: "WeightChecker measures total bottle weight (including cap); bottles then merge back."
+  - title: "Labeling & Final Check"
+    description: "MB → LB → QC → PK"
+    note: "After testing, bottles are labeled, inspected, and packed."
+
+test_results:
+  leak_tests:
+    heading: "Leak Testing (Failing)"
+    status: failure
+    details: |
+      A test batch of bottles flagged for leak testing follows BF→CP→SP→LT, but LeakTester reports 
+      a high number of leaks (leak rates exceed acceptable threshold). Many bottles show fluid seeping 
+      around the cap area, even though upstream machines appear to function correctly.
+  weight_tests:
+    heading: "Weight Checking (Failing)"
+    status: failure
+    details: |
+      In the same batch, bottles routed to WC show underweight readings (missing cap weight). 
+      WeightChecker logs indicate bottle weights consistently 5–7g below spec, matching the missing 
+      cap mass. This suggests caps may not be applied properly.
+  label_tests:
+    heading: "Label Alignment (Inconsistent)"
+    status: failure
+    details: |
+      Bottles that do proceed past Merger (despite failing earlier tests) reach the Labeler, 
+      but sensors detect misaligned labels on about 30% of bottles. Manual inspection shows 
+      labels sometimes wrap around the neck instead of the body, likely due to unstable cap placement.
+  spot_checks:
+    heading: "Spot‐Checks at Each Machine"
+    status: info
+    details: |
+      - BottleFiller: Fills bottles to correct volume; sensors confirm fill level is within tolerance.
+      - Capper: Appears to engage but torque‐sensor logs show irregular torque readings (some successful, 
+        some very low or zero torque).
+      - Splitter: Verification logs confirm bottles are correctly sent to LeakTester or WeightChecker.
+      - LeakTester: Physically receives bottles and reports leaks; no mechanical jams detected.
+      - WeightChecker: Receives bottles and registers underweight; scale calibration verified by test masses.
+      - Merger: Combines both streams without jams; bottles flow freely to Labeler.
+      - Labeler: Applies labels but misplacements occur; camera logs capture poor alignment correlating with 
+        loosely‐capped bottles.
+      - QualityCheck: Inspects only bottles that pass upstream; passed bottles are accepted without issue.
+      - Packer: Packages accepted bottles normally; throughput unaffected for good bottles.
+
+ping:
+  heading: "Device‐to‐Device Handshake Tests"
+  results:
+    - pair: "BF → CP"
+      status: success
+    - pair: "CP → SP"
+      status: success
+    - pair: "SP → LT"
+      status: success
+    - pair: "SP → WC"
+      status: success
+    - pair: "LT → MB"
+      status: success
+    - pair: "WC → MB"
+      status: success
+    - pair: "MB → LB"
+      status: success
+    - pair: "LB → QC"
+      status: success
+    - pair: "QC → PK"
+      status: success
+  note: |
+    All handshake tests succeed—no machine is completely offline or disconnected. Connectivity between 
+    every pair is confirmed.
+
+hints:
+  - "Both LeakTester and WeightChecker report failures for the same set of bottles, suggesting a common upstream issue."
+  - "Weights are missing cap mass, and leaks occur around the cap area—points to Capper misapplying or not tightening caps."
+  - "Labeler misalignment correlates with unstable caps; labels slip when the cap isn't seated properly."
+  - "Handshake tests between Capper and surrounding machines succeed, so the Capper is powered and connected."
+  - "Combine leak, weight, and label alignment symptoms to pinpoint the root cause."
+
+validation:
+  correct_answer: "CP"
+  success_feedback: "Correct! The Capper (CP) is faulty. Irregular torque readings, leaks detected around cap area, underweight readings (missing cap mass), and misaligned labels all stem from improperly applied caps."
+  failure_feedback: "Incorrect. The faulty device is the Capper (CP). LeakTester and WeightChecker both report issues that trace back to improperly applied caps, and Labeler misalignments align with cap instability."```
