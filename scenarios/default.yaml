@@ -116,6 +116,7 @@ test_results:
 
   ping:
     heading: "Machine‐to‐Machine Handshake Tests"
+    status: success
     results:
       - pair: "RM → SH"
         status: success
