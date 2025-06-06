@@ -325,21 +325,11 @@ header p {
         grid-template-columns: 1fr;
     }
 
-    .legend-topology {
-        flex-direction: column;
-    }
 }
 
 /* Mermaid diagram styling */
 .mermaid {
     text-align: center;
-}
-
-/* Device Legend and Topology side-by-side layout */
-.legend-topology {
-    display: flex;
-    gap: 20px;
-    align-items: stretch;
 }
 
 .scenario-menu {
@@ -427,12 +417,21 @@ header p {
     border: 0;
 }
 
-.legend-topology .device-legend {
-    flex: 0 0 calc(40% - 10px);
+
+.system-topology {
+    width: 100%;
 }
 
-.legend-topology .system-topology {
-    flex: 0 0 calc(60% - 10px);
+.device-tooltip {
+    position: absolute;
+    background: #ffffff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    z-index: 20;
+    max-width: 250px;
+    pointer-events: none;
 }
 
 /* Custom scrollbar for better UX */
