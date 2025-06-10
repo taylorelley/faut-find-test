@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', init);
 
 let hints = [];
 let currentScenario = '';
+let devices = [];
 
 async function init() {
     const deviceSelect = document.getElementById('deviceSelect');
@@ -68,15 +69,18 @@ function populateScenario(data) {
     overviewSection.innerHTML = '<h2>Exercise Overview</h2>' +
         data.overview.split('\n').map(p => `<p>${p}</p>`).join('');
 
+    devices = data.devices;
     const deviceGrid = document.getElementById('deviceGrid');
     const select = document.getElementById('deviceSelect');
-    deviceGrid.innerHTML = '';
+    if (deviceGrid) deviceGrid.innerHTML = '';
     select.innerHTML = '<option value="">Select a device...</option>';
     data.devices.forEach(d => {
-        const div = document.createElement('div');
-        div.className = 'device-item';
-        div.innerHTML = `<strong>${d.id} - ${d.name}</strong><p>${d.description}</p>`;
-        deviceGrid.appendChild(div);
+        if (deviceGrid) {
+            const div = document.createElement('div');
+            div.className = 'device-item';
+            div.innerHTML = `<strong>${d.id} - ${d.name}</strong><p>${d.description}</p>`;
+            deviceGrid.appendChild(div);
+        }
 
         const opt = document.createElement('option');
         opt.value = d.id;
@@ -93,16 +97,35 @@ function populateScenario(data) {
             // Ensure the element is treated as unprocessed
             diagramEl.removeAttribute('data-processed');
 
-            if (typeof mermaid.run === 'function') {
-                mermaid.run({ nodes: [diagramEl] });
-            } else if (typeof mermaid.init === 'function') {
-                mermaid.init(undefined, [diagramEl]);
-            } else if (typeof mermaid.contentLoaded === 'function') {
-                mermaid.contentLoaded();
+            const renderDiagram = () => {
+                if (typeof mermaid.run === 'function') {
+                    return mermaid.run({ nodes: [diagramEl] });
+                } else if (typeof mermaid.init === 'function') {
+                    mermaid.init(undefined, [diagramEl]);
+                } else if (typeof mermaid.contentLoaded === 'function') {
+                    mermaid.contentLoaded();
+                }
+            };
+
+            const result = renderDiagram();
+            // If rendering returns a promise, wait before attaching handlers
+            if (result && typeof result.then === 'function') {
+                result.then(() => attachTooltipHandlers());
+            } else {
+                // Fallback: observe for SVG insertion
+                const observer = new MutationObserver((mutations, obs) => {
+                    if (diagramEl.querySelector('svg')) {
+                        obs.disconnect();
+                        attachTooltipHandlers();
+                    }
+                });
+                observer.observe(diagramEl.parentNode || diagramEl, { childList: true, subtree: true });
             }
         } catch (err) {
             console.error('Mermaid rendering failed:', err);
         }
+    } else {
+        attachTooltipHandlers();
     }
 
     const pathInfo = document.getElementById('pathInfo');
@@ -311,6 +334,56 @@ async function loadScenario(name) {
 
         // Scroll to feedback
         target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function attachTooltipHandlers() {
+        const container = document.querySelector('.topology-container');
+        const tooltip = document.getElementById('deviceTooltip');
+        if (!container || !tooltip) return;
+
+        const hide = (e) => {
+            if (!tooltip.contains(e.target)) {
+                tooltip.classList.add('hidden');
+            }
+        };
+
+        document.addEventListener('click', hide);
+
+        function bindNodes() {
+            const svg = container.querySelector('svg');
+            if (!svg) return false;
+            svg.querySelectorAll('.node').forEach(node => {
+                node.style.cursor = 'pointer';
+                node.addEventListener('click', nodeClick);
+            });
+            return true;
+        }
+
+        function nodeClick(e) {
+            e.stopPropagation();
+            const node = e.currentTarget;
+            const label = node.textContent || '';
+            const match = label.match(/\(([^)]+)\)\s*$/);
+            if (!match) return;
+            const id = match[1];
+            const device = devices.find(d => d.id === id);
+            if (!device) return;
+            tooltip.innerHTML = `<strong>${device.id} - ${device.name}</strong><p>${device.description}</p>`;
+            const rect = node.getBoundingClientRect();
+            const contRect = container.getBoundingClientRect();
+            tooltip.style.left = `${rect.left - contRect.left + rect.width / 2}px`;
+            tooltip.style.top = `${rect.top - contRect.top + rect.height + 10}px`;
+            tooltip.classList.remove('hidden');
+        }
+
+        if (!bindNodes()) {
+            const observer = new MutationObserver((muts, obs) => {
+                if (bindNodes()) {
+                    obs.disconnect();
+                }
+            });
+            observer.observe(container, { childList: true, subtree: true });
+        }
     }
 
     function celebrateSuccess() {
