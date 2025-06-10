@@ -97,19 +97,36 @@ function populateScenario(data) {
             // Ensure the element is treated as unprocessed
             diagramEl.removeAttribute('data-processed');
 
-            if (typeof mermaid.run === 'function') {
-                mermaid.run({ nodes: [diagramEl] });
-            } else if (typeof mermaid.init === 'function') {
-                mermaid.init(undefined, [diagramEl]);
-            } else if (typeof mermaid.contentLoaded === 'function') {
-                mermaid.contentLoaded();
+            const renderDiagram = () => {
+                if (typeof mermaid.run === 'function') {
+                    return mermaid.run({ nodes: [diagramEl] });
+                } else if (typeof mermaid.init === 'function') {
+                    mermaid.init(undefined, [diagramEl]);
+                } else if (typeof mermaid.contentLoaded === 'function') {
+                    mermaid.contentLoaded();
+                }
+            };
+
+            const result = renderDiagram();
+            // If rendering returns a promise, wait before attaching handlers
+            if (result && typeof result.then === 'function') {
+                result.then(() => attachTooltipHandlers());
+            } else {
+                // Fallback: observe for SVG insertion
+                const observer = new MutationObserver((mutations, obs) => {
+                    if (diagramEl.querySelector('svg')) {
+                        obs.disconnect();
+                        attachTooltipHandlers();
+                    }
+                });
+                observer.observe(diagramEl.parentNode || diagramEl, { childList: true, subtree: true });
             }
         } catch (err) {
             console.error('Mermaid rendering failed:', err);
         }
+    } else {
+        attachTooltipHandlers();
     }
-
-    attachTooltipHandlers();
 
     const pathInfo = document.getElementById('pathInfo');
     pathInfo.innerHTML = '';
@@ -323,8 +340,6 @@ async function loadScenario(name) {
         const container = document.querySelector('.topology-container');
         const tooltip = document.getElementById('deviceTooltip');
         if (!container || !tooltip) return;
-        const svg = container.querySelector('svg');
-        if (!svg) return;
 
         const hide = (e) => {
             if (!tooltip.contains(e.target)) {
@@ -334,24 +349,41 @@ async function loadScenario(name) {
 
         document.addEventListener('click', hide);
 
-        svg.querySelectorAll('.node').forEach(node => {
-            node.style.cursor = 'pointer';
-            node.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const label = node.textContent || '';
-                const match = label.match(/\(([^)]+)\)\s*$/);
-                if (!match) return;
-                const id = match[1];
-                const device = devices.find(d => d.id === id);
-                if (!device) return;
-                tooltip.innerHTML = `<strong>${device.id} - ${device.name}</strong><p>${device.description}</p>`;
-                const rect = node.getBoundingClientRect();
-                const contRect = container.getBoundingClientRect();
-                tooltip.style.left = `${rect.left - contRect.left + rect.width / 2}px`;
-                tooltip.style.top = `${rect.top - contRect.top + rect.height + 10}px`;
-                tooltip.classList.remove('hidden');
+        function bindNodes() {
+            const svg = container.querySelector('svg');
+            if (!svg) return false;
+            svg.querySelectorAll('.node').forEach(node => {
+                node.style.cursor = 'pointer';
+                node.addEventListener('click', nodeClick);
             });
-        });
+            return true;
+        }
+
+        function nodeClick(e) {
+            e.stopPropagation();
+            const node = e.currentTarget;
+            const label = node.textContent || '';
+            const match = label.match(/\(([^)]+)\)\s*$/);
+            if (!match) return;
+            const id = match[1];
+            const device = devices.find(d => d.id === id);
+            if (!device) return;
+            tooltip.innerHTML = `<strong>${device.id} - ${device.name}</strong><p>${device.description}</p>`;
+            const rect = node.getBoundingClientRect();
+            const contRect = container.getBoundingClientRect();
+            tooltip.style.left = `${rect.left - contRect.left + rect.width / 2}px`;
+            tooltip.style.top = `${rect.top - contRect.top + rect.height + 10}px`;
+            tooltip.classList.remove('hidden');
+        }
+
+        if (!bindNodes()) {
+            const observer = new MutationObserver((muts, obs) => {
+                if (bindNodes()) {
+                    obs.disconnect();
+                }
+            });
+            observer.observe(container, { childList: true, subtree: true });
+        }
     }
 
     function celebrateSuccess() {
